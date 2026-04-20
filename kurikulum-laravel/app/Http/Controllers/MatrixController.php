@@ -13,30 +13,33 @@ class MatrixController extends Controller
 {
     /**
      * Menampilkan halaman Matriks (Frontend React)
-     * Input: CPL→IEA dan PPM→IEA
-     * Output: CPL→PPM (diturunkan secara transitif)
      */
     public function index()
     {
         // 1. Ambil semua data master
-        $cpls = Cpl::with(['ieas', 'ppms'])->get();
+        $cpls = Cpl::with('ieas')->get(); 
         $ieas = Iea::with(['cpls', 'ppms'])->get();
-        $ppms = Ppm::with(['ieas'])->get();
+        $ppms = Ppm::with('ieas')->get();
 
-        // 2. Hitung relasi CPL→PPM secara transitif
-        // Jika CPL terhubung ke IEA yang sama dengan PPM, maka CPL→PPM = true
+        // 2. Optimasi pemetaan IEA untuk setiap PPM
+        $ppmIeaMap = [];
+        foreach ($ppms as $ppm) {
+            $ppmIeaMap[$ppm->id] = $ppm->ieas->pluck('id')->toArray();
+        }
+
+        // 3. Hitung relasi CPL→PPM secara transitif (Otomatis)
         $cplToPpmMatrix = [];
         foreach ($cpls as $cpl) {
+            $cplIeaIds = $cpl->ieas->pluck('id')->toArray();
+            
             foreach ($ppms as $ppm) {
-                $cplIeaIds = $cpl->ieas->pluck('id')->toArray();
-                $ppmIeaIds = $ppm->ieas->pluck('id')->toArray();
-                // Transitif: apakah ada IEA yang sama?
-                $cplToPpmMatrix[$cpl->id][$ppm->id] = !empty(array_intersect($cplIeaIds, $ppmIeaIds));
+                // Jika ada IEA yang sama antara CPL dan PPM, maka true
+                $cplToPpmMatrix[$cpl->id][$ppm->id] = !empty(array_intersect($cplIeaIds, $ppmIeaMap[$ppm->id]));
             }
         }
 
-        // 3. Kirim data ke frontend React
-        return Inertia::render('Matrix/Index', [
+        // 4. Kirim data ke frontend React
+        return Inertia::render('Matrix/page', [
             'cpls' => $cpls,
             'ieas' => $ieas,
             'ppms' => $ppms,
@@ -57,13 +60,12 @@ class MatrixController extends Controller
 
         $cpl = Cpl::findOrFail($request->cpl_id);
         
-        // Update relasi di tabel pivot cpl_iea
         if ($request->is_selected) {
             $cpl->ieas()->syncWithoutDetaching([$request->iea_id => ['is_selected' => true]]);
         } else {
             $cpl->ieas()->detach($request->iea_id);
         }
 
-        return redirect()->back()->with('success', 'Matriks CPL-IEA berhasil diperbarui!');
+        return redirect()->back();
     }
 }
