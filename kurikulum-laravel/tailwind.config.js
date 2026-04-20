@@ -12,8 +12,20 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                polman: {
+                    primary: '#008B8B',
+                    secondary: '#2F4F4F',
+                    tertiary: '#7FFFD4',
+                    neutral: '#F8FAFC',
+                },
+            },
             fontFamily: {
+                headline: ['"Space Grotesk"', 'sans-serif'],
+                body: ['Inter', 'sans-serif'],
+                label: ['Manrope', 'sans-serif'],
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+
             },
         },
     },
