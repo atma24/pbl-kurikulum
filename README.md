@@ -85,8 +85,4 @@ Pastikan Anda sudah menginstal:
 *Dibuat dengan ❤️ untuk kemudahan manajemen kurikulum akademik.*
 ```
 
-***
 
-**Tips Tambahan untuk GitHub Anda:**
-1. Ganti `https://github.com/username-anda/nama-repo-anda.git` dengan *link repository* asli Anda nanti.
-2. Kalau Anda sudah sempat melakukan *screenshot* layar saat webnya berjalan tadi, sangat disarankan untuk menambahkan gambar *screenshot* tersebut di bagian bawah judul agar orang lain bisa langsung melihat seperti apa bentuk aplikasinya!
