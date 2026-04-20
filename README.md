@@ -79,7 +79,7 @@ Pastikan Anda sudah menginstal:
 
 ## 👤 Author
 * **Rauf Fansuri** - *Backend Developer*
-* **Ahmad Brilian** - *Frontend Developer*
+* **Achmad Brilyan Syach** - *Frontend Developer*
 
 ---
 *Dibuat dengan ❤️ untuk kemudahan manajemen kurikulum akademik.*
