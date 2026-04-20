@@ -13,23 +13,34 @@ class MatrixController extends Controller
 {
     /**
      * Menampilkan halaman Matriks (Frontend React)
+     * Input: CPL→IEA dan PPM→IEA
+     * Output: CPL→PPM (diturunkan secara transitif)
      */
     public function index()
     {
         // 1. Ambil semua data master
-        // Kita gunakan with() untuk langsung menarik data relasinya (pivot)
         $cpls = Cpl::with(['ieas', 'ppms'])->get();
-        $mataKuliahs = MataKuliah::with('cpls')->get();
-        
-        $ieas = Iea::all();
-        $ppms = Ppm::all();
+        $ieas = Iea::with(['cpls', 'ppms'])->get();
+        $ppms = Ppm::with(['ieas'])->get();
 
-        // 2. Kirim data ke frontend React (ke dalam folder resources/js/Pages/Matrix/Index.tsx)
+        // 2. Hitung relasi CPL→PPM secara transitif
+        // Jika CPL terhubung ke IEA yang sama dengan PPM, maka CPL→PPM = true
+        $cplToPpmMatrix = [];
+        foreach ($cpls as $cpl) {
+            foreach ($ppms as $ppm) {
+                $cplIeaIds = $cpl->ieas->pluck('id')->toArray();
+                $ppmIeaIds = $ppm->ieas->pluck('id')->toArray();
+                // Transitif: apakah ada IEA yang sama?
+                $cplToPpmMatrix[$cpl->id][$ppm->id] = !empty(array_intersect($cplIeaIds, $ppmIeaIds));
+            }
+        }
+
+        // 3. Kirim data ke frontend React
         return Inertia::render('Matrix/Index', [
             'cpls' => $cpls,
             'ieas' => $ieas,
             'ppms' => $ppms,
-            'mataKuliahs' => $mataKuliahs
+            'cplToPpmMatrix' => $cplToPpmMatrix
         ]);
     }
 
