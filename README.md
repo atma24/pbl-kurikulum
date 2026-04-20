@@ -84,5 +84,3 @@ Pastikan Anda sudah menginstal:
 ---
 *Dibuat dengan ❤️ untuk kemudahan manajemen kurikulum akademik.*
 ```
-
-
