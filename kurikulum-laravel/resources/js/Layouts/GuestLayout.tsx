@@ -1,43 +1,71 @@
-import { Link } from '@inertiajs/react';
 import { PropsWithChildren } from 'react';
+import { Link } from '@inertiajs/react';
 
 export default function Guest({ children }: PropsWithChildren) {
     return (
-        <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-polman-neutral">
-            {/* Kolom Kiri: Branding (Disembunyikan di layar HP) */}
-            <div className="hidden lg:flex flex-col justify-between bg-polman-primary text-white p-12 relative overflow-hidden">
-                {/* Logo & Header */}
-                <div className="z-10 flex items-center gap-4">
-                    {/* TODO: Ganti dengan tag <img src="/images/logo.png" /> */}
-                    <div className="w-12 h-12 bg-black rounded-md"></div>
-                    <span className="font-headline font-bold text-xl">POLMAN Bandung</span>
-                </div>
+        <div className="flex min-h-screen w-full bg-white font-body">
 
-                {/* Typography Hero */}
-                <div className="z-10 mt-16 max-w-md">
-                    <h1 className="font-headline text-5xl font-bold leading-tight mb-6">
-                        Engineering The Future of Curriculum.
+            {/* AREA KIRI: Branding & Visual (Hanya muncul di layar besar) */}
+            <div className="relative hidden w-1/2 flex-col justify-center px-16 lg:flex bg-polman-primary overflow-hidden">
+
+                {/* 1. Background Image dengan Opacity */}
+                {/* mix-blend-luminosity membantu menyatukan warna gambar dengan warna hijau background */}
+                <div
+                    className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-20 mix-blend-luminosity"
+                    style={{ backgroundImage: "url('/images/ae-bg.jpg')" }}
+                />
+
+                {/* 2. Konten Teks & Logo (z-10 agar berada di atas gambar) */}
+                <div className="relative z-10">
+
+                    {/* Header: Logo & Brand Name */}
+                    <div className="mb-16 flex items-center gap-6">
+                        {/* Render Logo dengan Wadah Putih (Solusi 1) */}
+                        <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white p-3 shadow-xl transition-transform hover:scale-105">
+                            <img
+                                src="/images/polman.png"
+                                alt="Automation Engineering Logo"
+                                className="h-full w-full object-contain"
+                                onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    document.getElementById('fallback-logo')!.style.display = 'flex';
+                                }}
+                            />
+                        </div>
+
+                        {/* Fallback Inisial AE jika gambar gagal dimuat */}
+                        <div id="fallback-logo" className="hidden h-20 w-20 bg-gray-900 rounded-2xl items-center justify-center text-white font-bold text-2xl shadow-xl">
+                            AE
+                        </div>
+
+                        {/* Teks Brand */}
+                        <div className="flex flex-col">
+                            <span className="font-headline text-2xl font-bold text-white tracking-wide leading-tight">
+                                Automation <br /> Engineering
+                            </span>
+                            <span className="text-[10px] text-polman-tertiary uppercase tracking-[0.2em] font-bold mt-1">
+                                Official Portal
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Tagline */}
+                    <h1 className="font-headline text-5xl font-bold leading-tight text-white mb-6">
+                        Engineering The <br /> Future of <br /> Curriculum.
                     </h1>
-                    <p className="font-body text-polman-tertiary text-lg">
+                    <p className="text-lg text-polman-tertiary max-w-md leading-relaxed">
                         Integrated OBE management system for Industrial Engineering Technology.
                     </p>
                 </div>
-
-                {/* Footer / Badges (IABEE Compliant) */}
-                <div className="z-10 flex flex-col gap-4 mt-auto">
-                    {/* Nanti diisi badges */}
-                </div>
-                
-                {/* TODO: Tambahkan background pattern/garis miring sesuai Figma di sini */}
             </div>
 
-            {/* Kolom Kanan: Form Area */}
-            <div className="flex flex-col justify-center items-center p-6 sm:p-12 bg-white">
+            {/* AREA KANAN: Form Login/Register */}
+            <div className="flex w-full items-center justify-center lg:w-1/2 px-8">
                 <div className="w-full max-w-md">
-                    {/* {children} ini adalah tempat Login.tsx / Register.tsx akan disuntikkan */}
                     {children}
                 </div>
             </div>
+
         </div>
     );
 }
