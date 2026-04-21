@@ -6,11 +6,16 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\MatrixController;
 
-// Rute untuk menampilkan halaman matriks
+// Menampilkan halaman utama matriks
 Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix.index');
 
-// Rute untuk menyimpan centangan matriks (akan dipanggil oleh React secara rahasia di background)
+// Menyimpan centangan tabel matriks
 Route::post('/matrix/sync-cpl-iea', [MatrixController::class, 'syncCplIea'])->name('matrix.sync.cpl-iea');
+Route::post('/matrix/sync-ppm-iea', [MatrixController::class, 'syncPpmIea'])->name('matrix.sync.ppm-iea');
+
+// Menyimpan data CPL baru (Otomatis generate kode)
+Route::post('/matrix/cpl', [MatrixController::class, 'storeCpl'])->name('matrix.cpl.store');
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
