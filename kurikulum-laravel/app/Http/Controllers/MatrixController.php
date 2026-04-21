@@ -92,4 +92,26 @@ class MatrixController extends Controller
 
         return redirect()->back()->with('success', 'CPL Baru berhasil ditambahkan!');
     }
+        public function storePpm(Request $request)
+        {
+        // 1. Validasi deskripsi
+        $request->validate([
+            'deskripsi' => 'required|string|min:5',
+        ]);
+
+        // 2. Logika Otomatisasi Kode PPM
+        $count = \App\Models\Ppm::count();
+        $nextNumber = $count + 1;
+
+        // Format kode menjadi PPM-01, PPM-02, dst.
+        $generatedKode = 'PPM-' . str_pad($nextNumber, 2, '0', STR_PAD_LEFT);
+
+        // 3. Simpan ke database
+        \App\Models\Ppm::create([
+            'kode' => $generatedKode,
+            'deskripsi' => $request->deskripsi,
+        ]);
+
+        return redirect()->back()->with('success', "Berhasil menambah $generatedKode");
+    }
 }
