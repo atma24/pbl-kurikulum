@@ -8,47 +8,44 @@ use Inertia\Inertia;
 
 class IeaController extends Controller
 {
-    /**
-     * Menampilkan halaman khusus input IEA
-     */
     public function index()
     {
-        // Ambil semua data IEA untuk ditampilkan di tabel bawah form
-        $ieas = Iea::orderBy('id', 'asc')->get();
-        
         return Inertia::render('Iea/page', [
-            'ieas' => $ieas
+            'ieas' => Iea::orderBy('id', 'asc')->get()
         ]);
     }
 
-    /**
-     * Menyimpan data IEA baru dengan kode abjad otomatis
-     */
     public function store(Request $request)
     {
-        // 1. Validasi hanya deskripsi yang diinput
-        $request->validate([
-            'deskripsi' => 'required|string|min:5',
-        ]);
+        $request->validate(['deskripsi' => 'required|string|min:5']);
 
-        // 2. Logika Abjad Otomatis (A, B, C ... Z, AA, AB)
+        // Logika increment abjad PHP (A++ jadi B, Z++ jadi AA)
         $count = Iea::count();
-        $letter = 'A'; // Dimulai dari A
-        
-        // Looping untuk menaikkan huruf sebanyak jumlah data yang ada
+        $letter = 'A';
         for ($i = 0; $i < $count; $i++) {
-            $letter++; 
+            $letter++;
         }
 
-        // Format kode menjadi IEA_A, IEA_B, dst.
-        $generatedKode = 'IEA_' . $letter;
-
-        // 3. Simpan ke database
         Iea::create([
-            'kode' => $generatedKode,
-            'deskripsi' => $request->deskripsi,
+            'kode' => 'IEA_' . $letter,
+            'deskripsi' => $request->deskripsi
         ]);
 
-        return redirect()->back()->with('success', "Berhasil menambah $generatedKode");
+        return redirect()->back()->with('success', 'IEA berhasil ditambahkan!');
+    }
+
+    public function update(Request $request, Iea $iea)
+    {
+        $request->validate(['deskripsi' => 'required|string|min:5']);
+
+        $iea->update(['deskripsi' => $request->deskripsi]);
+
+        return redirect()->back()->with('success', 'Deskripsi IEA berhasil diubah!');
+    }
+
+    public function destroy(Iea $iea)
+    {
+        $iea->delete();
+        return redirect()->back()->with('success', 'IEA berhasil dihapus!');
     }
 }

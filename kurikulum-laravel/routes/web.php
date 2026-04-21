@@ -4,21 +4,34 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\MatrixController;
+use App\Http\Controllers\CplController;
+use App\Http\Controllers\PpmController;
 use App\Http\Controllers\IeaController;
+use App\Http\Controllers\MatrixController;
 
-// Rute untuk halaman Input IEA
+// Grouping Matrix
+Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix.index');
+Route::post('/matrix/sync-cpl-iea', [MatrixController::class, 'syncCplIea']);
+Route::post('/matrix/sync-ppm-iea', [MatrixController::class, 'syncPpmIea']);
+
+// CPL Routes
+Route::get('/cpl', [CplController::class, 'index'])->name('cpl.index');
+Route::post('/cpl', [CplController::class, 'store'])->name('cpl.store');
+Route::patch('/cpl/{cpl}', [CplController::class, 'update'])->name('cpl.update');
+Route::delete('/cpl/{cpl}', [CplController::class, 'destroy'])->name('cpl.destroy');
+
+// PPM Routes
+Route::get('/ppm', [PpmController::class, 'index'])->name('ppm.index');
+Route::post('/ppm', [PpmController::class, 'store'])->name('ppm.store');
+Route::patch('/ppm/{ppm}', [PpmController::class, 'update'])->name('ppm.update');
+Route::delete('/ppm/{ppm}', [PpmController::class, 'destroy'])->name('ppm.destroy');
+
+// IEA Routes
 Route::get('/iea', [IeaController::class, 'index'])->name('iea.index');
 Route::post('/iea', [IeaController::class, 'store'])->name('iea.store');
-// Menampilkan halaman utama matriks
-Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix.index');
+Route::patch('/iea/{iea}', [IeaController::class, 'update'])->name('iea.update');
+Route::delete('/iea/{iea}', [IeaController::class, 'destroy'])->name('iea.destroy');
 
-// Menyimpan centangan tabel matriks
-Route::post('/matrix/sync-cpl-iea', [MatrixController::class, 'syncCplIea'])->name('matrix.sync.cpl-iea');
-Route::post('/matrix/sync-ppm-iea', [MatrixController::class, 'syncPpmIea'])->name('matrix.sync.ppm-iea');
-Route::post('/matrix/ppm', [MatrixController::class, 'storePpm'])->name('matrix.ppm.store');
-// Menyimpan data CPL baru (Otomatis generate kode)
-Route::post('/matrix/cpl', [MatrixController::class, 'storeCpl'])->name('matrix.cpl.store');
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
