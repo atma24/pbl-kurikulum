@@ -38,80 +38,36 @@ class MatrixController extends Controller
         ]);
     }
 
+    // Fungsi sync tetap di sini karena ini spesifik hubungan antar entitas di matriks
     public function syncCplIea(Request $request)
     {
         $request->validate([
-            'cpl_id'      => 'required|exists:cpls,id',
-            'iea_id'      => 'required|exists:ieas,id',
+            'cpl_id' => 'required|exists:cpls,id',
+            'iea_id' => 'required|exists:ieas,id',
             'is_selected' => 'required|boolean'
         ]);
 
         $cpl = Cpl::findOrFail($request->cpl_id);
-        if ($request->is_selected) {
-            $cpl->ieas()->syncWithoutDetaching([$request->iea_id => ['is_selected' => true]]);
-        } else {
+        $request->is_selected ? 
+            $cpl->ieas()->syncWithoutDetaching([$request->iea_id => ['is_selected' => true]]) : 
             $cpl->ieas()->detach($request->iea_id);
-        }
+
         return redirect()->back();
     }
 
     public function syncPpmIea(Request $request)
     {
         $request->validate([
-            'ppm_id'      => 'required|exists:ppms,id',
-            'iea_id'      => 'required|exists:ieas,id',
+            'ppm_id' => 'required|exists:ppms,id',
+            'iea_id' => 'required|exists:ieas,id',
             'is_selected' => 'required|boolean'
         ]);
 
         $ppm = Ppm::findOrFail($request->ppm_id);
-        if ($request->is_selected) {
-            $ppm->ieas()->syncWithoutDetaching([$request->iea_id => ['is_selected' => true]]);
-        } else {
+        $request->is_selected ? 
+            $ppm->ieas()->syncWithoutDetaching([$request->iea_id => ['is_selected' => true]]) : 
             $ppm->ieas()->detach($request->iea_id);
-        }
+
         return redirect()->back();
-    }
-
-    // FUNGSI BARU: Tambah CPL Otomatis
-    public function storeCpl(Request $request)
-    {
-        $request->validate([
-            'deskripsi' => 'required|string|min:5',
-        ]);
-
-        $count = Cpl::count();
-        $nextNumber = $count + 1;
-        
-        // Format menjadi CPL-01, CPL-02, dst.
-        $generatedKode = 'CPL-' . str_pad($nextNumber, 2, '0', STR_PAD_LEFT);
-
-        Cpl::create([
-            'kode' => $generatedKode,
-            'deskripsi' => $request->deskripsi,
-        ]);
-
-        return redirect()->back()->with('success', 'CPL Baru berhasil ditambahkan!');
-    }
-        public function storePpm(Request $request)
-        {
-        // 1. Validasi deskripsi
-        $request->validate([
-            'deskripsi' => 'required|string|min:5',
-        ]);
-
-        // 2. Logika Otomatisasi Kode PPM
-        $count = \App\Models\Ppm::count();
-        $nextNumber = $count + 1;
-
-        // Format kode menjadi PPM-01, PPM-02, dst.
-        $generatedKode = 'PPM-' . str_pad($nextNumber, 2, '0', STR_PAD_LEFT);
-
-        // 3. Simpan ke database
-        \App\Models\Ppm::create([
-            'kode' => $generatedKode,
-            'deskripsi' => $request->deskripsi,
-        ]);
-
-        return redirect()->back()->with('success', "Berhasil menambah $generatedKode");
     }
 }
