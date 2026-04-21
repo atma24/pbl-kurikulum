@@ -39,7 +39,7 @@ class MatrixController extends Controller
         }
 
         // 4. Kirim data ke frontend React
-        return Inertia::render('Matrix/page', [
+        return Inertia::render('Matrix/Page', [
             'cpls' => $cpls,
             'ieas' => $ieas,
             'ppms' => $ppms,
