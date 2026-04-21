@@ -100,14 +100,14 @@ class MatrixController extends Controller
         ]);
 
         // 2. Logika Otomatisasi Kode PPM
-        $count = \App\Models\Ppm::count();
+        $count = Ppm::count();
         $nextNumber = $count + 1;
 
         // Format kode menjadi PPM-01, PPM-02, dst.
         $generatedKode = 'PPM-' . str_pad($nextNumber, 2, '0', STR_PAD_LEFT);
 
         // 3. Simpan ke database
-        \App\Models\Ppm::create([
+        Ppm::create([
             'kode' => $generatedKode,
             'deskripsi' => $request->deskripsi,
         ]);

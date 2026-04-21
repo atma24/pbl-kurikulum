@@ -5,7 +5,11 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\MatrixController;
+use App\Http\Controllers\IeaController;
 
+// Rute untuk halaman Input IEA
+Route::get('/iea', [IeaController::class, 'index'])->name('iea.index');
+Route::post('/iea', [IeaController::class, 'store'])->name('iea.store');
 // Menampilkan halaman utama matriks
 Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix.index');
 
