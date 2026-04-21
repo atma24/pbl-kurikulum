@@ -7,39 +7,30 @@ use Inertia\Inertia;
 use App\Models\Cpl;
 use App\Models\Iea;
 use App\Models\Ppm;
-use App\Models\MataKuliah;
 
 class MatrixController extends Controller
 {
-    /**
-     * Menampilkan halaman Matriks (Frontend React)
-     */
     public function index()
     {
-        // 1. Ambil semua data master
         $cpls = Cpl::with('ieas')->get(); 
-        $ieas = Iea::with(['cpls', 'ppms'])->get();
         $ppms = Ppm::with('ieas')->get();
+        $ieas = Iea::all();
 
-        // 2. Optimasi pemetaan IEA untuk setiap PPM
         $ppmIeaMap = [];
         foreach ($ppms as $ppm) {
             $ppmIeaMap[$ppm->id] = $ppm->ieas->pluck('id')->toArray();
         }
 
-        // 3. Hitung relasi CPL→PPM secara transitif (Otomatis)
         $cplToPpmMatrix = [];
         foreach ($cpls as $cpl) {
             $cplIeaIds = $cpl->ieas->pluck('id')->toArray();
-            
             foreach ($ppms as $ppm) {
-                // Jika ada IEA yang sama antara CPL dan PPM, maka true
-                $cplToPpmMatrix[$cpl->id][$ppm->id] = !empty(array_intersect($cplIeaIds, $ppmIeaMap[$ppm->id]));
+                $intersection = array_intersect($cplIeaIds, $ppmIeaMap[$ppm->id]);
+                $cplToPpmMatrix[$cpl->id][$ppm->id] = !empty($intersection);
             }
         }
 
-        // 4. Kirim data ke frontend React
-        return Inertia::render('Matrix/Page', [
+        return Inertia::render('Matrix/page', [
             'cpls' => $cpls,
             'ieas' => $ieas,
             'ppms' => $ppms,
@@ -47,9 +38,6 @@ class MatrixController extends Controller
         ]);
     }
 
-    /**
-     * Menyimpan atau menghapus relasi antara CPL dan IEA (Input Tabel 1)
-     */
     public function syncCplIea(Request $request)
     {
         $request->validate([
@@ -59,18 +47,49 @@ class MatrixController extends Controller
         ]);
 
         $cpl = Cpl::findOrFail($request->cpl_id);
-        
         if ($request->is_selected) {
-            // Gunakan syncWithoutDetaching agar data lain tidak terhapus, 
-            // dan tambahkan status is_selected di pivot jika diperlukan
-            $cpl->ieas()->syncWithoutDetaching([
-                $request->iea_id => ['is_selected' => true]
-            ]);
+            $cpl->ieas()->syncWithoutDetaching([$request->iea_id => ['is_selected' => true]]);
         } else {
-            // Jika un-check, hapus baris di tabel pivot
             $cpl->ieas()->detach($request->iea_id);
         }
-
         return redirect()->back();
+    }
+
+    public function syncPpmIea(Request $request)
+    {
+        $request->validate([
+            'ppm_id'      => 'required|exists:ppms,id',
+            'iea_id'      => 'required|exists:ieas,id',
+            'is_selected' => 'required|boolean'
+        ]);
+
+        $ppm = Ppm::findOrFail($request->ppm_id);
+        if ($request->is_selected) {
+            $ppm->ieas()->syncWithoutDetaching([$request->iea_id => ['is_selected' => true]]);
+        } else {
+            $ppm->ieas()->detach($request->iea_id);
+        }
+        return redirect()->back();
+    }
+
+    // FUNGSI BARU: Tambah CPL Otomatis
+    public function storeCpl(Request $request)
+    {
+        $request->validate([
+            'deskripsi' => 'required|string|min:5',
+        ]);
+
+        $count = Cpl::count();
+        $nextNumber = $count + 1;
+        
+        // Format menjadi CPL-01, CPL-02, dst.
+        $generatedKode = 'CPL-' . str_pad($nextNumber, 2, '0', STR_PAD_LEFT);
+
+        Cpl::create([
+            'kode' => $generatedKode,
+            'deskripsi' => $request->deskripsi,
+        ]);
+
+        return redirect()->back()->with('success', 'CPL Baru berhasil ditambahkan!');
     }
 }
