@@ -34,4 +34,9 @@ class Cpl extends Model
                     ->withPivot('bobot')
                     ->withTimestamps();
     }
+    // Tambahkan relasi ini di dalam class Cpl
+    public function indikatorKinerjas()
+    {
+        return $this->hasMany(IndikatorKinerja::class, 'cpl_id');
+    }
 }

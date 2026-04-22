@@ -45,4 +45,5 @@ class CplController extends Controller
         $cpl->delete(); // Relasi di pivot cpl_iea akan otomatis hilang karena cascade
         return redirect()->back()->with('success', 'CPL berhasil dihapus!');
     }
+    
 }
