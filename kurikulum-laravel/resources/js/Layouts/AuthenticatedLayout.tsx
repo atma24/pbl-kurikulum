@@ -10,20 +10,20 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
     const currentUrl = usePage().url;
 
     // --- LOGIKA FOLDER SIDEBAR ---
-    // Cek apakah kita sedang berada di dalam halaman Master Data
-    const isMasterDataActive = currentUrl.startsWith('/cpl') || currentUrl.startsWith('/ppm') || currentUrl.startsWith('/iea');
+    // Cek apakah kita sedang berada di dalam halaman Master Data (Termasuk Indikator Kinerja)
+    const isMasterDataActive = currentUrl.startsWith('/cpl') || 
+                               currentUrl.startsWith('/ppm') || 
+                               currentUrl.startsWith('/iea') || 
+                               currentUrl.startsWith('/indikator-kinerja');
 
-    // State untuk mengontrol buka/tutup folder (default terbuka jika halamannya sedang aktif)
+    // State untuk mengontrol buka/tutup folder
     const [isMasterFolderOpen, setIsMasterFolderOpen] = useState(isMasterDataActive);
-
-    const isMatrixActive = currentUrl.startsWith('/matrix');
-    const [isMatrixFolderOpen, setIsMatrixFolderOpen] = useState(isMatrixActive);
 
     return (
         <div className="flex h-screen w-full bg-polman-neutral overflow-hidden font-body">
 
             {/* AREA 1: LEFT SIDEBAR */}
-            <aside className="w-64 flex-shrink-0 bg-white border-r border-gray-200 flex flex-col justify-between z-20">
+            <aside className="w-64 flex-shrink-0 bg-white border-r border-gray-200 flex flex-col justify-between z-20 shadow-sm">
                 <div>
                     {/* Area Logo */}
                     <div className="h-20 flex items-center px-6 border-b border-gray-100">
@@ -70,7 +70,7 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                                 className="w-full flex items-center justify-between px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-polman-primary transition-colors focus:outline-none"
                             >
                                 <span>Master Data</span>
-                                {/* Ikon Chevron (Panah) yang berputar jika terbuka */}
+                                {/* Ikon Chevron (Panah) */}
                                 <svg
                                     className={`w-4 h-4 transform transition-transform duration-200 ${isMasterFolderOpen ? 'rotate-90 text-polman-primary' : ''}`}
                                     fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -79,8 +79,8 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                                 </svg>
                             </button>
 
-                            {/* Isi Folder (CPL, PPM, IEA) */}
-                            <div className={`space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${isMasterFolderOpen ? 'max-h-48 opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                            {/* Isi Folder (CPL, PPM, IEA, Indikator Kinerja) */}
+                            <div className={`space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${isMasterFolderOpen ? 'max-h-[300px] opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
                                 <Link
                                     href={route('cpl.index')}
                                     className={`flex items-center gap-3 px-4 py-2.5 ml-2 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/cpl')
@@ -110,15 +110,25 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                                 >
                                     <span>Data IEA</span>
                                 </Link>
+
+                                {/* Tombol Indikator Kinerja Baru */}
+                                <Link
+                                    href={route('indikator-kinerja.index')}
+                                    className={`flex items-center gap-3 px-4 py-2.5 ml-2 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/indikator-kinerja')
+                                        ? 'bg-polman-neutral text-polman-primary border-l-4 border-polman-primary'
+                                        : 'text-gray-500 hover:bg-gray-50 hover:text-polman-secondary border-l-4 border-transparent'
+                                        }`}
+                                >
+                                    <span>Indikator Kinerja</span>
+                                </Link>
                             </div>
                         </div>
-                      
                     </nav>
                 </div>
 
                 {/* Area Bawah Sidebar (Tombol & Logout) */}
                 <div className="p-6 space-y-4">
-                    <button className="w-full bg-polman-primary text-white rounded-lg py-3 text-sm font-bold flex items-center justify-center gap-2 hover:bg-polman-secondary transition-colors">
+                    <button className="w-full bg-polman-primary text-white rounded-lg py-3 text-sm font-bold flex items-center justify-center gap-2 hover:bg-polman-secondary transition-colors shadow-sm hover:shadow-md">
                         <span>+ New Revision</span>
                     </button>
 
@@ -137,7 +147,7 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
             <div className="flex-1 flex flex-col overflow-hidden relative">
 
                 {/* AREA 2: TOP HEADER */}
-                <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-8 z-10">
+                <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-8 z-10 shadow-sm">
                     <div className="flex items-center gap-8 w-full max-w-3xl">
                         <h2 className="font-headline font-bold text-polman-primary text-lg">TRIN Curriculum Portal</h2>
 
@@ -146,16 +156,23 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                             <input
                                 type="text"
                                 placeholder="Search curriculum components..."
-                                className="w-full bg-gray-100 border-none rounded-lg py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-polman-primary text-gray-700"
+                                className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-polman-primary focus:bg-white transition-colors text-gray-700"
                             />
+                            <svg className="w-4 h-4 text-gray-400 absolute left-3.5 top-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
                         </div>
                     </div>
 
                     {/* User Profile Area */}
                     <div className="flex items-center gap-4">
-                        <button className="text-gray-400 hover:text-gray-600">🔔</button>
-                        <button className="text-gray-400 hover:text-gray-600">⚙️</button>
-                        <div className="h-8 w-8 rounded-full bg-gray-300 overflow-hidden ml-2 border border-gray-200">
+                        <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                        </button>
+                        <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        </button>
+                        <div className="h-8 w-8 rounded-full bg-gray-300 overflow-hidden ml-2 border-2 border-polman-primary">
                             <img src={`https://ui-avatars.com/api/?name=${user.name}&background=008B8B&color=fff`} alt="Profile" />
                         </div>
                     </div>
@@ -164,6 +181,11 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                 {/* AREA 3: MAIN SCROLLABLE CONTENT */}
                 <main className="flex-1 overflow-y-auto p-8">
                     <div className="max-w-7xl mx-auto">
+                        {header && (
+                            <div className="mb-6">
+                                {header}
+                            </div>
+                        )}
                         {children}
                     </div>
                 </main>
