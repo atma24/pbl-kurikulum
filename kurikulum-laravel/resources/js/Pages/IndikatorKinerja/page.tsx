@@ -15,11 +15,11 @@ interface IndikatorKinerja {
     kode: string;
     deskripsi: string;
     cpl_id: number;
-    cpl?: Cpl; // Relasi dari backend
+    cpl?: Cpl;
 }
 
 interface Props {
-    indikator_kinerjas: IndikatorKinerja[]; // Disesuaikan dengan penamaan Controller (snake_case)
+    indikator_kinerjas: IndikatorKinerja[];
     cpls: Cpl[];
 }
 
@@ -28,19 +28,16 @@ export default function IndikatorKinerjaPage({ indikator_kinerjas, cpls }: Props
     const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
     const [selectedId, setSelectedId] = useState<number | null>(null);
 
-    // Inertia Form Setup (Ditambahkan field 'kode')
     const { data, setData, post, patch, reset, processing, errors, clearErrors } = useForm({
         kode: '',
         deskripsi: '',
         cpl_id: '' as number | '',
     });
 
-    // --- State untuk Fitur Search CPL ---
     const [searchQuery, setSearchQuery] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Menutup dropdown jika klik di luar area
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -51,16 +48,46 @@ export default function IndikatorKinerjaPage({ indikator_kinerjas, cpls }: Props
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Filter CPL berdasarkan pencarian
+    // --- ALGORITMA AUTO-GENERATE KODE (FITUR BARU) ---
+    useEffect(() => {
+        // Hanya jalankan auto-generate jika sedang mode 'Tambah Data' dan CPL sudah dipilih
+        if (modalMode === 'add' && data.cpl_id !== '') {
+            
+            // 1. Tentukan Huruf berdasarkan urutan/index CPL (0 = A, 1 = B, 2 = C)
+            const cplIndex = cpls.findIndex(c => c.id === data.cpl_id);
+            
+            if (cplIndex !== -1) {
+                // Konversi index ke huruf (ASCII: 65 adalah 'A')
+                const letter = String.fromCharCode(65 + cplIndex); 
+
+                // 2. Tentukan Angka dengan mencari kode tertinggi di CPL ini
+                const existingIks = indikator_kinerjas.filter(ik => ik.cpl_id === data.cpl_id);
+                
+                // Cari angka terbesar (misal ada A-1, A-3, maka terbesar adalah 3)
+                const maxNum = existingIks.reduce((max, ik) => {
+                    const parts = ik.kode.split('-');
+                    if (parts.length === 2) {
+                        const num = parseInt(parts[1], 10);
+                        return !isNaN(num) && num > max ? num : max;
+                    }
+                    return max;
+                }, 0);
+
+                const nextNum = maxNum + 1; // Angka selanjutnya
+
+                // 3. Gabungkan dan masukkan ke dalam state form
+                setData('kode', `${letter}-${nextNum}`);
+            }
+        }
+    }, [data.cpl_id, modalMode, cpls, indikator_kinerjas]); 
+
     const filteredCpls = cpls.filter(cpl => 
         cpl.kode.toLowerCase().includes(searchQuery.toLowerCase()) || 
         cpl.deskripsi.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Menemukan CPL yang sedang dipilih untuk ditampilkan di input
     const selectedCpl = cpls.find(c => c.id === data.cpl_id);
 
-    // --- Handlers ---
     const openAddModal = () => {
         setModalMode('add');
         reset();
@@ -172,11 +199,9 @@ export default function IndikatorKinerjaPage({ indikator_kinerjas, cpls }: Props
                         
                         <form onSubmit={handleSubmit} className="space-y-5">
                             
-                            {/* Custom Searchable Dropdown untuk CPL (Dipindah ke atas agar logis) */}
+                            {/* Searchable Dropdown untuk CPL */}
                             <div className="relative" ref={dropdownRef}>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Pilih Relasi CPL <span className="text-red-500">*</span></label>
-                                
-                                {/* Area Input Pencarian / Tampilan Terpilih */}
                                 <div 
                                     className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm flex items-center justify-between cursor-text focus-within:ring-2 focus-within:ring-polman-primary focus-within:border-polman-primary transition-all"
                                     onClick={() => setIsDropdownOpen(true)}
@@ -195,13 +220,11 @@ export default function IndikatorKinerjaPage({ indikator_kinerjas, cpls }: Props
                                             {selectedCpl ? `${selectedCpl.kode} - ${selectedCpl.deskripsi}` : 'Klik untuk mencari CPL...'}
                                         </div>
                                     )}
-                                    
                                     <svg className={`w-4 h-4 text-gray-400 transform transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </div>
 
-                                {/* List Dropdown Mengambang */}
                                 {isDropdownOpen && (
                                     <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-48 overflow-y-auto">
                                         {filteredCpls.length === 0 ? (
@@ -229,17 +252,18 @@ export default function IndikatorKinerjaPage({ indikator_kinerjas, cpls }: Props
                                 {errors.cpl_id && <p className="text-red-500 text-xs mt-1">{errors.cpl_id}</p>}
                             </div>
 
-                            {/* Input Kode */}
+                            {/* Input Kode (DIKUNCI / READ ONLY) */}
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Kode Indikator <span className="text-red-500">*</span></label>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Kode Indikator</label>
                                 <input
                                     type="text"
-                                    className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-polman-primary focus:border-polman-primary uppercase"
-                                    placeholder="Contoh: A-1, B-2..."
+                                    // Mengubah styling agar terlihat terkunci (abu-abu, cursor-not-allowed)
+                                    className="w-full bg-gray-100 border border-gray-200 rounded-lg p-3 text-sm font-bold text-gray-600 cursor-not-allowed focus:ring-0 focus:border-gray-200"
+                                    placeholder={data.cpl_id ? "Mengisi otomatis..." : "Pilih CPL terlebih dahulu..."}
                                     value={data.kode}
-                                    onChange={(e) => setData('kode', e.target.value.toUpperCase())}
-                                    required
+                                    readOnly // <- PROPERTI INI YANG MENGUNCI INPUT
                                 />
+                                <p className="text-[10px] text-polman-primary font-bold mt-1">✨ Kode digenerate otomatis berdasarkan CPL yang dipilih.</p>
                                 {errors.kode && <p className="text-red-500 text-xs mt-1">{errors.kode}</p>}
                             </div>
 
@@ -262,7 +286,7 @@ export default function IndikatorKinerjaPage({ indikator_kinerjas, cpls }: Props
                                 <button type="button" onClick={closeModal} className="px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                                     Batal
                                 </button>
-                                <button type="submit" disabled={processing || !data.cpl_id} className="px-4 py-2 text-sm font-bold text-white bg-polman-primary hover:bg-polman-secondary rounded-lg transition-colors disabled:opacity-50">
+                                <button type="submit" disabled={processing || !data.cpl_id || !data.kode} className="px-4 py-2 text-sm font-bold text-white bg-polman-primary hover:bg-polman-secondary rounded-lg transition-colors disabled:opacity-50">
                                     {processing ? 'Menyimpan...' : 'Simpan Data'}
                                 </button>
                             </div>
