@@ -9,16 +9,20 @@ class MataKuliah extends Model
 {
     use HasFactory;
 
-    // Menegaskan nama tabel (opsional tapi sangat disarankan agar Laravel tidak bingung)
     protected $table = 'mata_kuliahs';
+    protected $fillable = ['kode_mk', 'nama_mk', 'sks', 'deskripsi'];
 
-    protected $fillable = ['kode_mk', 'nama_mk', 'sks'];
-
-    // Relasi ke CPL
+    // Relasi ke CPL (Sudah paduka miliki)
     public function cpls()
     {
         return $this->belongsToMany(Cpl::class, 'mk_cpl', 'mata_kuliah_id', 'cpl_id')
                     ->withPivot('bobot')
                     ->withTimestamps();
+    }
+
+    // Relasi ke CPMK (Baru ditambahkan)
+    public function cpmks()
+    {
+        return $this->hasMany(Cpmk::class, 'mata_kuliah_id');
     }
 }

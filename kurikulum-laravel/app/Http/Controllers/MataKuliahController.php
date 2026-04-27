@@ -8,61 +8,51 @@ use Inertia\Inertia;
 
 class MataKuliahController extends Controller
 {
-    /**
-     * Menampilkan daftar mata kuliah
-     */
+    // Menampilkan daftar Mata Kuliah ke ranah Antarmuka (Front-end)
     public function index()
     {
-        return Inertia::render('MataKuliah/page', [
-            'mata_kuliahs' => MataKuliah::orderBy('kode_mk', 'asc')->get()
+        $mataKuliahs = MataKuliah::all();
+        return Inertia::render('MataKuliah/Index', [
+            'mataKuliahs' => $mataKuliahs
         ]);
     }
 
-    /**
-     * Menyimpan mata kuliah baru
-     */
+    // Menempa data Mata Kuliah baru
     public function store(Request $request)
     {
-        $request->validate([
-            'kode_mk' => 'required|string|max:20|unique:mata_kuliahs,kode_mk',
+        $validated = $request->validate([
+            'kode_mk' => 'required|string|unique:mata_kuliahs,kode_mk',
             'nama_mk' => 'required|string|max:255',
-            'sks'     => 'required|integer|min:1|max:8',
+            'sks' => 'required|integer|min:1',
+            'deskripsi' => 'nullable|string'
         ]);
 
-        MataKuliah::create([
-            'kode_mk' => $request->kode_mk,
-            'nama_mk' => $request->nama_mk,
-            'sks'     => $request->sks,
-        ]);
+        MataKuliah::create($validated);
 
-        return redirect()->back()->with('success', 'Mata Kuliah berhasil ditambahkan!');
+        return redirect()->back()->with('success', 'Pusaka Mata Kuliah berhasil ditempa.');
     }
 
-    /**
-     * Memperbarui data mata kuliah
-     */
-    public function update(Request $request, MataKuliah $mataKuliah)
-    {
-        $request->validate([
-            'kode_mk' => 'required|string|max:20|unique:mata_kuliahs,kode_mk,' . $mataKuliah->id,
-            'nama_mk' => 'required|string|max:255',
-            'sks'     => 'required|integer|min:1|max:8',
-        ]);
-
-        $mataKuliah->update($request->only('kode_mk', 'nama_mk', 'sks'));
-
-        return redirect()->back()->with('success', 'Mata Kuliah berhasil diperbarui!');
-    }
-
-    /**
-     * Menghapus mata kuliah
-     */
+    // Menghapus entitas
     public function destroy(MataKuliah $mataKuliah)
     {
-        // Catatan: Karena kita menggunakan cascade di migrasi, 
-        // menghapus MK akan otomatis menghapus CPMK di dalamnya.
         $mataKuliah->delete();
+        return redirect()->back()->with('success', 'Mata Kuliah telah dilenyapkan dari sejarah.');
+    }
 
-        return redirect()->back()->with('success', 'Mata Kuliah berhasil dihapus dari sistem!');
+    /**
+     * FUNGSI SAKTI UNTUK RPS OTOMATIS
+     * Mengambil silsilah lengkap: MK -> CPL (dengan Indikator) & MK -> CPMK (dengan Indikator)
+     */
+    public function apiGetRpsData($id)
+    {
+        $mataKuliah = MataKuliah::with([
+            'cpls.indikatorKinerjas', 
+            'cpmks.indikatorKinerjas'
+        ])->findOrFail($id);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $mataKuliah
+        ]);
     }
 }
