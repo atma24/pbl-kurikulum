@@ -10,11 +10,13 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
     const currentUrl = usePage().url;
 
     // --- LOGIKA FOLDER SIDEBAR ---
-    // Cek apakah kita sedang berada di dalam halaman Master Data (Termasuk Indikator Kinerja)
+    // Cek apakah kita sedang berada di dalam halaman Master Data (termasuk Mata Kuliah & CPMK)
     const isMasterDataActive = currentUrl.startsWith('/cpl') || 
                                currentUrl.startsWith('/ppm') || 
                                currentUrl.startsWith('/iea') || 
-                               currentUrl.startsWith('/indikator-kinerja');
+                               currentUrl.startsWith('/indikator-kinerja') ||
+                               currentUrl.startsWith('/mata-kuliah') || 
+                               currentUrl.startsWith('/cpmk'); // CPMK juga masuk ke ranah MK
 
     // State untuk mengontrol buka/tutup folder
     const [isMasterFolderOpen, setIsMasterFolderOpen] = useState(isMasterDataActive);
@@ -24,9 +26,9 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
 
             {/* AREA 1: LEFT SIDEBAR */}
             <aside className="w-64 flex-shrink-0 bg-white border-r border-gray-200 flex flex-col justify-between z-20 shadow-sm">
-                <div>
+                <div className="flex flex-col h-full overflow-y-auto">
                     {/* Area Logo */}
-                    <div className="h-20 flex items-center px-6 border-b border-gray-100">
+                    <div className="h-20 shrink-0 flex items-center px-6 border-b border-gray-100">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-polman-primary rounded-md flex items-center justify-center text-white font-bold">
                                 P
@@ -39,7 +41,7 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                     </div>
 
                     {/* Area Menu Navigasi */}
-                    <nav className="p-4 space-y-1">
+                    <nav className="p-4 space-y-1 flex-1">
                         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 mt-2 px-4">Menu Utama</div>
 
                         <Link
@@ -62,7 +64,7 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                             <span>Curriculum Map</span>
                         </Link>
 
-                        {/* --- FOLDER MASTER DATA (Sistem Lipat) --- */}
+                        {/* --- FOLDER MASTER DATA (Sistem Lipat) --- */}   
                         <div className="mt-6 mb-2">
                             {/* Tombol Toggle Folder */}
                             <button
@@ -79,8 +81,20 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                                 </svg>
                             </button>
 
-                            {/* Isi Folder (CPL, PPM, IEA, Indikator Kinerja) */}
-                            <div className={`space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${isMasterFolderOpen ? 'max-h-[300px] opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                            {/* Isi Folder (Mata Kuliah, CPL, PPM, IEA, Indikator Kinerja) */}
+                            <div className={`space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${isMasterFolderOpen ? 'max-h-[400px] opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                                
+                                {/* --- MENU MATA KULIAH --- */}
+                                <Link
+                                    href={route('mata-kuliah.index')}
+                                    className={`flex items-center gap-3 px-4 py-2.5 ml-2 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/mata-kuliah') || currentUrl.startsWith('/cpmk')
+                                        ? 'bg-polman-neutral text-polman-primary border-l-4 border-polman-primary'
+                                        : 'text-gray-500 hover:bg-gray-50 hover:text-polman-secondary border-l-4 border-transparent'
+                                        }`}
+                                >
+                                    <span>Mata Kuliah</span>
+                                </Link>
+
                                 <Link
                                     href={route('cpl.index')}
                                     className={`flex items-center gap-3 px-4 py-2.5 ml-2 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/cpl')
@@ -111,7 +125,6 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                                     <span>Data IEA</span>
                                 </Link>
 
-                                {/* Tombol Indikator Kinerja Baru */}
                                 <Link
                                     href={route('indikator-kinerja.index')}
                                     className={`flex items-center gap-3 px-4 py-2.5 ml-2 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/indikator-kinerja')
@@ -127,7 +140,7 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                 </div>
 
                 {/* Area Bawah Sidebar (Tombol & Logout) */}
-                <div className="p-6 space-y-4">
+                <div className="p-6 space-y-4 shrink-0 bg-white border-t border-gray-100">
                     <button className="w-full bg-polman-primary text-white rounded-lg py-3 text-sm font-bold flex items-center justify-center gap-2 hover:bg-polman-secondary transition-colors shadow-sm hover:shadow-md">
                         <span>+ New Revision</span>
                     </button>
@@ -147,12 +160,12 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
             <div className="flex-1 flex flex-col overflow-hidden relative">
 
                 {/* AREA 2: TOP HEADER */}
-                <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-8 z-10 shadow-sm">
+                <header className="h-20 shrink-0 bg-white/80 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-8 z-10 shadow-sm">
                     <div className="flex items-center gap-8 w-full max-w-3xl">
-                        <h2 className="font-headline font-bold text-polman-primary text-lg">TRIN Curriculum Portal</h2>
+                        <h2 className="font-headline font-bold text-polman-primary text-lg whitespace-nowrap">TRIN Curriculum Portal</h2>
 
                         {/* Search Bar */}
-                        <div className="flex-1 relative">
+                        <div className="flex-1 relative w-full">
                             <input
                                 type="text"
                                 placeholder="Search curriculum components..."
@@ -165,7 +178,7 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                     </div>
 
                     {/* User Profile Area */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 shrink-0">
                         <button className="text-gray-400 hover:text-gray-600 transition-colors">
                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
                         </button>

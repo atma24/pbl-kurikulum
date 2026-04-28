@@ -12,7 +12,7 @@ class MataKuliahController extends Controller
     public function index()
     {
         $mataKuliahs = MataKuliah::all();
-        return Inertia::render('MataKuliah/Index', [
+        return Inertia::render('MataKuliah/page', [
             'mataKuliahs' => $mataKuliahs
         ]);
     }

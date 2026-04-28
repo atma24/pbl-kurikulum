@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Cpmk;
 use App\Models\MataKuliah;
-use App\Models\IndikatorKinerja;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -13,14 +12,18 @@ class CpmkController extends Controller
     /**
      * Menampilkan daftar CPMK berdasarkan Mata Kuliah tertentu
      */
-    public function index($mataKuliahId)
+    public function index(string $mataKuliahId)
     {
-        $mk = MataKuliah::with('cpmks.indikatorKinerjas')->findOrFail($mataKuliahId);
-        $allIndikators = IndikatorKinerja::all(); // Untuk pilihan di form
+        // PERBAIKAN 1: Tambahkan 'cpls.indikatorKinerjas' agar data CPL ikut ditarik
+        $mk = MataKuliah::with([
+            'cpls.indikatorKinerjas', 
+            'cpmks.indikatorKinerjas'
+        ])->findOrFail($mataKuliahId);
 
-        return Inertia::render('Cpmk/Index', [
+        return Inertia::render('Cpmk/page', [
             'mataKuliah' => $mk,
-            'allIndikators' => $allIndikators
+            // PERBAIKAN 2: Frontend membutuhkan 'existingCpmks', bukan 'allIndikators'
+            'existingCpmks' => $mk->cpmks 
         ]);
     }
 
@@ -47,6 +50,29 @@ class CpmkController extends Controller
         $cpmk->indikatorKinerjas()->sync($validated['indikator_ids']);
 
         return redirect()->back()->with('success', 'CPMK telah berhasil ditempa dan diikat pada Indikator.');
+    }
+
+    /**
+     * PERBAIKAN 3: Menambahkan fungsi update agar tombol Edit berfungsi
+     */
+    public function update(Request $request, Cpmk $cpmk)
+    {
+        $validated = $request->validate([
+            'kode_cpmk' => 'required|string',
+            'deskripsi' => 'required|string',
+            'indikator_ids' => 'required|array',
+            'indikator_ids.*' => 'exists:indikator_kinerjas,id'
+        ]);
+
+        $cpmk->update([
+            'kode_cpmk' => $validated['kode_cpmk'],
+            'deskripsi' => $validated['deskripsi'],
+        ]);
+
+        // Sinkronisasi ulang relasi Many-to-Many
+        $cpmk->indikatorKinerjas()->sync($validated['indikator_ids']);
+
+        return redirect()->back()->with('success', 'CPMK telah berhasil diperbarui.');
     }
 
     /**
