@@ -69,9 +69,11 @@ Route::middleware('auth')->group(function () {
     Route::prefix('mata-kuliah')->group(function () {
         Route::get('/', [MataKuliahController::class, 'index'])->name('mata-kuliah.index');
         Route::post('/', [MataKuliahController::class, 'store'])->name('mata-kuliah.store');
-        Route::delete('/{mata_kuliah}', [MataKuliahController::class, 'destroy'])->name('mata-kuliah.destroy');
         
-        // API SAKTI UNTUK OTOMASI RPS (DIPANGGIL VIA AXIOS/FETCH)
+        // MANTRA BARU: Gerbang untuk Update
+        Route::put('/{mata_kuliah}', [MataKuliahController::class, 'update'])->name('mata-kuliah.update');
+        
+        Route::delete('/{mata_kuliah}', [MataKuliahController::class, 'destroy'])->name('mata-kuliah.destroy');
         Route::get('/{id}/rps-data', [MataKuliahController::class, 'apiGetRpsData'])->name('mata-kuliah.rps-data');
     });
 
