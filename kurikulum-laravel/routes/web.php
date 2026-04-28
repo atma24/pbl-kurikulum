@@ -10,7 +10,7 @@ use App\Http\Controllers\IeaController;
 use App\Http\Controllers\MatrixController;
 use App\Http\Controllers\IndikatorKinerjaController;
 use App\Http\Controllers\MataKuliahController;
-
+use App\Http\Controllers\CpmkController;
 
 
 
@@ -65,6 +65,33 @@ Route::middleware('auth')->group(function () {
     Route::delete('/iea/{iea}', [IeaController::class, 'destroy'])->name('iea.destroy');
 
     Route::resource('mata-kuliah', MataKuliahController::class)->except(['create', 'show', 'edit']);
+    // --- GULUNGAN RUTE MATA KULIAH ---
+    Route::prefix('mata-kuliah')->group(function () {
+        Route::get('/', [MataKuliahController::class, 'index'])->name('mata-kuliah.index');
+        Route::post('/', [MataKuliahController::class, 'store'])->name('mata-kuliah.store');
+        Route::delete('/{mata_kuliah}', [MataKuliahController::class, 'destroy'])->name('mata-kuliah.destroy');
+        
+        // API SAKTI UNTUK OTOMASI RPS (DIPANGGIL VIA AXIOS/FETCH)
+        Route::get('/{id}/rps-data', [MataKuliahController::class, 'apiGetRpsData'])->name('mata-kuliah.rps-data');
+    });
+
+    // --- GULUNGAN RUTE CPMK ---
+    Route::prefix('cpmk')->group(function () {
+        // Menampilkan CPMK berdasarkan ID Mata Kuliah
+        Route::get('/mk/{mata_kuliah_id}', [CpmkController::class, 'index'])->name('cpmk.index');
+        Route::post('/', [CpmkController::class, 'store'])->name('cpmk.store');
+        Route::delete('/{cpmk}', [CpmkController::class, 'destroy'])->name('cpmk.destroy');
+    });
+
+    // --- GULUNGAN RUTE MATRIX (PUSAKA UTAMA KURIKULUM) ---
+    Route::prefix('matrix')->group(function () {
+        Route::get('/', [MatrixController::class, 'index'])->name('matrix.index');
+        
+        // MANTRA SINKRONISASI PIVOT
+        Route::post('/sync-cpl-iea', [MatrixController::class, 'syncCplIea'])->name('matrix.sync-cpl-iea');
+        Route::post('/sync-ppm-iea', [MatrixController::class, 'syncPpmIea'])->name('matrix.sync-ppm-iea');
+        Route::post('/sync-mk-cpl', [MatrixController::class, 'syncMkCpl'])->name('matrix.sync-mk-cpl');
+    });
 });
 
 require __DIR__.'/auth.php';
