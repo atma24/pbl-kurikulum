@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('mata_kuliahs', function (Blueprint $table) {
@@ -16,13 +13,11 @@ return new class extends Migration
             $table->string('kode_mk')->unique();
             $table->string('nama_mk');
             $table->integer('sks');
+            $table->text('deskripsi')->nullable(); // Pusaka penting untuk RPS
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('mata_kuliahs');

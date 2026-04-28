@@ -1,0 +1,58 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\MataKuliah;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+
+class MataKuliahController extends Controller
+{
+    // Menampilkan daftar Mata Kuliah ke ranah Antarmuka (Front-end)
+    public function index()
+    {
+        $mataKuliahs = MataKuliah::all();
+        return Inertia::render('MataKuliah/Index', [
+            'mataKuliahs' => $mataKuliahs
+        ]);
+    }
+
+    // Menempa data Mata Kuliah baru
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'kode_mk' => 'required|string|unique:mata_kuliahs,kode_mk',
+            'nama_mk' => 'required|string|max:255',
+            'sks' => 'required|integer|min:1',
+            'deskripsi' => 'nullable|string'
+        ]);
+
+        MataKuliah::create($validated);
+
+        return redirect()->back()->with('success', 'Pusaka Mata Kuliah berhasil ditempa.');
+    }
+
+    // Menghapus entitas
+    public function destroy(MataKuliah $mataKuliah)
+    {
+        $mataKuliah->delete();
+        return redirect()->back()->with('success', 'Mata Kuliah telah dilenyapkan dari sejarah.');
+    }
+
+    /**
+     * FUNGSI SAKTI UNTUK RPS OTOMATIS
+     * Mengambil silsilah lengkap: MK -> CPL (dengan Indikator) & MK -> CPMK (dengan Indikator)
+     */
+    public function apiGetRpsData($id)
+    {
+        $mataKuliah = MataKuliah::with([
+            'cpls.indikatorKinerjas', 
+            'cpmks.indikatorKinerjas'
+        ])->findOrFail($id);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $mataKuliah
+        ]);
+    }
+}

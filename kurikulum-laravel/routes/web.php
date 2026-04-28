@@ -9,6 +9,9 @@ use App\Http\Controllers\PpmController;
 use App\Http\Controllers\IeaController;
 use App\Http\Controllers\MatrixController;
 use App\Http\Controllers\IndikatorKinerjaController;
+use App\Http\Controllers\MataKuliahController;
+
+
 
 
 Route::get('/', function () {
@@ -60,6 +63,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/iea', [IeaController::class, 'store'])->name('iea.store');
     Route::patch('/iea/{iea}', [IeaController::class, 'update'])->name('iea.update');
     Route::delete('/iea/{iea}', [IeaController::class, 'destroy'])->name('iea.destroy');
+
+    Route::resource('mata-kuliah', MataKuliahController::class)->except(['create', 'show', 'edit']);
 });
 
 require __DIR__.'/auth.php';
