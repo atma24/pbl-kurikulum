@@ -21,7 +21,7 @@ class HandleInertiaRequests extends Middleware
     {
         return parent::version($request);
     }
-
+    
     /**
      * Define the props that are shared by default.
      *
@@ -33,6 +33,9 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                // Tambahkan sihir ini agar React tahu kasta dan hak akses pengguna
+                'roles' => $request->user() ? $request->user()->getRoleNames() : [],
+                'permissions' => $request->user() ? $request->user()->getAllPermissions()->pluck('name') : [],
             ],
         ];
     }
