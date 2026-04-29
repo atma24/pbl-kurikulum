@@ -7,36 +7,25 @@ use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
 {
-    /**
-     * The root template that is loaded on the first page visit.
-     *
-     * @var string
-     */
     protected $rootView = 'app';
 
-    /**
-     * Determine the current asset version.
-     */
-    public function version(Request $request): ?string
+    public function version(Request $request): string|null
     {
         return parent::version($request);
     }
-    
-    /**
-     * Define the props that are shared by default.
-     *
-     * @return array<string, mixed>
-     */
+
     public function share(Request $request): array
     {
         return [
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
-                // Tambahkan sihir ini agar React tahu kasta dan hak akses pengguna
+                // Sihir RBAC: Mengirim gelar dan hak akses ke Frontend
                 'roles' => $request->user() ? $request->user()->getRoleNames() : [],
                 'permissions' => $request->user() ? $request->user()->getAllPermissions()->pluck('name') : [],
             ],
+            // SIHIR MULTI-TENANT: Mengirim ID wilayah (trin, tro, trmo) atau null jika di pusat
+            'tenant_id' => tenant('id'), 
         ];
     }
 }
