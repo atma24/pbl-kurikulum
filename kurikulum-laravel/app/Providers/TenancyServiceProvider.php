@@ -123,6 +123,11 @@ class TenancyServiceProvider extends ServiceProvider
         $this->app->booted(function () {
             if (file_exists(base_path('routes/tenant.php'))) {
                 Route::namespace(static::$controllerNamespace)
+                    ->middleware([
+                        'web',
+                        \Stancl\Tenancy\Middleware\InitializeTenancyByDomain::class,
+                        \Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains::class,
+                    ])
                     ->group(base_path('routes/tenant.php'));
             }
         });
@@ -142,7 +147,7 @@ class TenancyServiceProvider extends ServiceProvider
         ];
 
         foreach (array_reverse($tenancyMiddleware) as $middleware) {
-            $this->app[\Illuminate\Contracts\Http\Kernel::class]->prependToMiddlewarePriority($middleware);
+            $this->app->make(\Illuminate\Contracts\Http\Kernel::class)->prependToMiddlewarePriority($middleware);
         }
     }
 }

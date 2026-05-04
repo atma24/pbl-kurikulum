@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Models\Tenant;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -9,7 +11,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return 'Selamat datang di Gerbang Landlord. Silakan akses wilayah Paduka melalui subdomain (contoh: trin.localhost:8000).';
-});
+    // Menarik semua data tenant beserta tabel relasi 'domains'
+    $tenants = Tenant::with('domains')->get();
 
-// Catatan: require auth.php TELAH DIHAPUS dari sini dan dipindah ke tenant.php
+    // Melempar data ke komponen React js/Pages/Portal/page.tsx
+    return Inertia::render('Portal/page', [
+        'tenants' => $tenants
+    ]);
+});
