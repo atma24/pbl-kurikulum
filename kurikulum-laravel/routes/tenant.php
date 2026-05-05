@@ -10,7 +10,7 @@ use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\MatrixController;
 use App\Http\Controllers\PpmController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\RpsController; // Mantra baru diimpor
+use App\Http\Controllers\RpsController; 
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -73,10 +73,13 @@ Route::middleware([
         // KEKUASAAN BERSAMA (DOSEN & KAPRODI)
         // ==========================================
         
-        // Rute Utama RPS (Inertia)
-        Route::resource('rps', RpsController::class); // Meliputi index, create, store, show, edit, update, destroy
+        // 1. Integrasi Ekspor PDF (Letakkan SEBELUM resource agar tidak tertabrak route /rps/{id})
+        Route::get('/rps/{rps}/pdf', [RpsController::class, 'exportPdf'])->name('rps.pdf');
 
-        // Gerbang Suci API (Internal Fetch untuk Otomatisasi RPS)
+        // 2. Rute Utama RPS (Inertia)
+        Route::resource('rps', RpsController::class);
+
+        // 3. Gerbang API Internal
         Route::prefix('api')->group(function () {
             Route::get('/mata-kuliah/{id}/rps-data', [MataKuliahController::class, 'apiGetRpsData'])
                 ->name('api.mata-kuliah.rps-data');
