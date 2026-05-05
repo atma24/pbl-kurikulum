@@ -24,6 +24,10 @@ class MataKuliahController extends Controller
             'kode_mk' => 'required|string|unique:mata_kuliahs,kode_mk',
             'nama_mk' => 'required|string|max:255',
             'sks' => 'required|integer|min:1',
+            'semester' => 'required|integer|min:1',
+            'sifat_pengambilan' => 'required|string|in:Wajib,Pilihan',
+            'cara_pembelajaran' => 'required|string|in:Tatap Muka,Daring,Bauran',
+            'prasyarat' => 'nullable|string|max:255',
             'deskripsi' => 'nullable|string'
         ]);
 
@@ -38,6 +42,8 @@ class MataKuliahController extends Controller
         $mataKuliah->delete();
         return redirect()->back()->with('success', 'Mata Kuliah telah dilenyapkan dari sejarah.');
     }
+
+    // Memperbarui entitas
     public function update(Request $request, MataKuliah $mataKuliah)
     {
         // Validasi ketat agar data tetap suci dari kesalahan
@@ -46,7 +52,9 @@ class MataKuliahController extends Controller
             'nama_mk' => 'required|string|max:255',
             'sks' => 'required|integer|min:1',
             'semester' => 'required|integer|min:1',
-            'dosen_pengampu' => 'nullable|string|max:255',
+            'sifat_pengambilan' => 'required|string|in:Wajib,Pilihan',
+            'cara_pembelajaran' => 'required|string|in:Tatap Muka,Daring,Bauran',
+            'prasyarat' => 'nullable|string|max:255',
             'deskripsi' => 'nullable|string'
         ]);
 
@@ -55,6 +63,7 @@ class MataKuliahController extends Controller
 
         return redirect()->back()->with('success', 'Data Mata Kuliah telah berhasil diperbarui, Yang Mulia.');
     }
+
     /**
      * FUNGSI SAKTI UNTUK RPS OTOMATIS
      * Mengambil silsilah lengkap: MK -> CPL (dengan Indikator) & MK -> CPMK (dengan Indikator)

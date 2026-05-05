@@ -30,8 +30,18 @@ class RolePermissionSeeder extends Seeder
             'create_cpmk',
             'create_rps'
         ]);
+            // Menciptakan Penguasa Pertama secara dinamis berdasarkan ID wilayah
+        $admin = \App\Models\User::firstOrCreate(
+            ['email' => 'admin@' . tenant('id') . '.localhost'],
+            [
+                'name' => 'Kaprodi ' . strtoupper(tenant('id')),
+                'password' => \Illuminate\Support\Facades\Hash::make('password_rahasia')
+            ]
+        );
 
-        // Catatan: Kaprodi tidak perlu diberi permission satu per satu di sini,
-        // karena kita akan memberinya kuasa absolut di tingkat Kernel/Provider.
-    }
+        // Menganugerahkan kasta tertinggi
+        $admin->assignRole('Kaprodi');
+                // Catatan: Kaprodi tidak perlu diberi permission satu per satu di sini,
+                // karena kita akan memberinya kuasa absolut di tingkat Kernel/Provider.
+            }
 }
