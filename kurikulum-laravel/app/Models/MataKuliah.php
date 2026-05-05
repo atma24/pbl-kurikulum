@@ -10,7 +10,16 @@ class MataKuliah extends Model
     use HasFactory;
 
     protected $table = 'mata_kuliahs';
-    protected $fillable = ['kode_mk', 'nama_mk', 'sks', 'jenis', 'deskripsi'];
+    protected $fillable = [
+        'kode_mk',
+        'nama_mk',
+        'sks',
+        'jenis',
+        'deskripsi',
+        'semester',
+        'sifat_pengambilan',
+        'cara_pembelajaran'
+    ];
     // Relasi ke CPL (Sudah paduka miliki)
     public function cpls()
     {
