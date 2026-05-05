@@ -18,7 +18,8 @@ class MataKuliah extends Model
         'deskripsi',
         'semester',
         'sifat_pengambilan',
-        'cara_pembelajaran'
+        'cara_pembelajaran',
+        'prasyarat_id',
     ];
     // Relasi ke CPL (Sudah paduka miliki)
     public function cpls()
@@ -27,7 +28,10 @@ class MataKuliah extends Model
                     ->withPivot('bobot')
                     ->withTimestamps();
     }
-
+    public function prasyarat()
+{
+    return $this->belongsTo(MataKuliah::class, 'prasyarat_id');
+}
     // Relasi ke CPMK (Baru ditambahkan)
     public function cpmks()
     {

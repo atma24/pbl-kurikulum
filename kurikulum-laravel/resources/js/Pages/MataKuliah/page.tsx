@@ -10,6 +10,11 @@ interface MataKuliah {
     sks: number;
     jenis: 'Teori' | 'Praktek';
     deskripsi: string | null;
+    semester: string | null;
+    sifat_pengambilan: string | null;
+    cara_pembelajaran: string | null;
+    prasyarat_id: number | null;
+    prasyarat?: { kode_mk: string; nama_mk: string } | null;
 }
 
 export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuliah[] }) {
@@ -22,42 +27,38 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
         nama_mk: '',
         sks: '',
         jenis: 'Teori',
+        semester: '',
+        sifat_pengambilan: 'Wajib',
+        cara_pembelajaran: 'Tatap Muka',
         deskripsi: '',
+        prasyarat_id: '' as string | number | null,
     });
 
-    // --- FUNGSI GENERATOR KODE OTOMATIS ---
     const generateNextKodeMk = () => {
         if (!mataKuliahs || mataKuliahs.length === 0) return 'MK-01';
-
-        // Ekstrak angka dari format "MK-XX" yang sudah ada
         const existingNumbers = mataKuliahs.map(mk => {
             const match = mk.kode_mk.match(/MK-(\d+)/);
             return match ? parseInt(match[1], 10) : 0;
         });
-
-        // Cari angka paling tinggi, lalu tambah 1
         const maxNumber = Math.max(...existingNumbers, 0);
-        const nextNumber = maxNumber + 1;
-
-        // Jadikan format 2 digit (contoh: 1 -> "01", 12 -> "12")
-        const paddedNumber = nextNumber.toString().padStart(2, '0');
-        return `MK-${paddedNumber}`;
+        return `MK-${(maxNumber + 1).toString().padStart(2, '0')}`;
     };
 
     const openAddModal = () => {
         setModalMode('add');
         reset(); 
         clearErrors();
-        
-        // Panggil fungsi generator untuk mengisi kode otomatis
         setData({
             kode_mk: generateNextKodeMk(),
             nama_mk: '',
             sks: '',
             jenis: 'Teori',
+            semester: '',
+            sifat_pengambilan: 'Wajib',
+            cara_pembelajaran: 'Tatap Muka',
             deskripsi: '',
+            prasyarat_id: '',
         });
-        
         setIsModalOpen(true);
     };
 
@@ -65,11 +66,15 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
         setModalMode('edit');
         setSelectedId(mk.id);
         setData({
-            kode_mk: mk.kode_mk, // Tarik data lama
+            kode_mk: mk.kode_mk,
             nama_mk: mk.nama_mk,
             sks: mk.sks.toString(),
             jenis: mk.jenis,
+            semester: mk.semester || '',
+            sifat_pengambilan: mk.sifat_pengambilan || 'Wajib',
+            cara_pembelajaran: mk.cara_pembelajaran || 'Tatap Muka',
             deskripsi: mk.deskripsi || '',
+            prasyarat_id: mk.prasyarat_id || '',
         });
         clearErrors();
         setIsModalOpen(true);
@@ -98,31 +103,41 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                         <tr>
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Kode</th>
                             <th className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Nama</th>
+                            <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Smt</th>
                             <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">SKS</th>
-                            <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Jenis</th>
+                            <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Sifat</th>
                             <th className="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {mataKuliahs.length === 0 ? (
-                            <tr><td colSpan={5} className="text-center py-8 text-gray-400">Belum ada data Mata Kuliah.</td></tr>
+                            <tr><td colSpan={6} className="text-center py-8 text-gray-400">Belum ada data Mata Kuliah.</td></tr>
                         ) : (
                             mataKuliahs.map((mk) => (
                                 <tr key={mk.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 font-bold text-polman-primary">{mk.kode_mk}</td>
-                                    <td className="px-6 py-4 font-medium text-gray-800">{mk.nama_mk}</td>
+                                    
+                                    {/* STEP D: Tampilan Prasyarat di Tabel */}
+                                    <td className="px-6 py-4 font-medium text-gray-800">
+                                        {mk.nama_mk}
+                                        <div className="text-xs text-gray-500 mt-1">{mk.jenis} • {mk.cara_pembelajaran}</div>
+                                        {mk.prasyarat && (
+                                            <div className="text-xs text-red-500 mt-1 font-bold">
+                                                Prasyarat: {mk.prasyarat.kode_mk}
+                                            </div>
+                                        )}
+                                    </td>
+
+                                    <td className="px-6 py-4 text-center font-bold text-gray-600">{mk.semester || '-'}</td>
                                     <td className="px-6 py-4 text-center font-bold text-gray-600">{mk.sks}</td>
                                     <td className="px-6 py-4 text-center">
-                                        <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${mk.jenis === 'Teori' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>
-                                            {mk.jenis}
+                                        <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${mk.sifat_pengambilan === 'Wajib' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                                            {mk.sifat_pengambilan || '-'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-3">
-                                            <Link href={`/cpmk/mk/${mk.id}`} className="bg-polman-primary hover:bg-polman-secondary text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5">
-                                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                </svg>
+                                            <Link href={`/cpmk/mk/${mk.id}`} className="bg-polman-primary hover:bg-polman-secondary text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors">
                                                 Kelola CPMK
                                             </Link>
                                             <button onClick={() => openEditModal(mk)} className="text-blue-600 hover:text-blue-800 font-bold px-2 text-sm transition-colors">Edit</button>
@@ -139,50 +154,83 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
             <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} className="relative z-50">
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
                 <div className="fixed inset-0 flex items-center justify-center p-4">
-                    <Dialog.Panel className="bg-white p-6 rounded-2xl w-full max-w-lg shadow-2xl font-body">
+                    <Dialog.Panel className="bg-white p-6 rounded-2xl w-full max-w-2xl shadow-2xl font-body overflow-y-auto max-h-[90vh]">
                         <Dialog.Title className="text-xl font-bold text-gray-900 mb-4">{modalMode === 'add' ? 'Tambah Mata Kuliah' : 'Edit Mata Kuliah'}</Dialog.Title>
                         <form onSubmit={handleSubmit} className="space-y-4">
+                            
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Kode MK <span className="text-red-500">*</span></label>
-                                    {/* --- INPUT DIKUNCI (READONLY) DAN DIUBAH WARNANYA AGAR TERLIHAT TERKUNCI --- */}
-                                    <input 
-                                        type="text" 
-                                        className="w-full border-gray-200 bg-gray-100 text-gray-500 rounded-lg text-sm cursor-not-allowed font-bold" 
-                                        value={data.kode_mk} 
-                                        readOnly // Mengunci input
-                                    />
-                                    {errors.kode_mk && <p className="text-red-500 text-xs mt-1">{errors.kode_mk}</p>}
+                                    <input type="text" className="w-full border-gray-200 bg-gray-100 text-gray-500 rounded-lg text-sm cursor-not-allowed font-bold" value={data.kode_mk} readOnly />
                                 </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Nama Mata Kuliah <span className="text-red-500">*</span></label>
+                                    <input type="text" className="w-full border-gray-300 rounded-lg focus:ring-polman-primary text-sm" value={data.nama_mk} onChange={e => setData('nama_mk', e.target.value)} required />
+                                    {errors.nama_mk && <p className="text-red-500 text-xs mt-1">{errors.nama_mk}</p>}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-4">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Bobot SKS <span className="text-red-500">*</span></label>
                                     <input type="number" min="1" className="w-full border-gray-300 rounded-lg focus:ring-polman-primary text-sm" value={data.sks} onChange={e => setData('sks', e.target.value)} required />
                                     {errors.sks && <p className="text-red-500 text-xs mt-1">{errors.sks}</p>}
                                 </div>
-                            </div>
-                            
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Jenis Mata Kuliah <span className="text-red-500">*</span></label>
-                                <select 
-                                    className="w-full border-gray-300 rounded-lg focus:ring-polman-primary text-sm bg-white" 
-                                    value={data.jenis} 
-                                    onChange={e => setData('jenis', e.target.value as 'Teori' | 'Praktek')}
-                                >
-                                    <option value="Teori">Teori</option>
-                                    <option value="Praktek">Praktek</option>
-                                </select>
-                                {errors.jenis && <p className="text-red-500 text-xs mt-1">{errors.jenis}</p>}
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Semester</label>
+                                    <input type="text" placeholder="Cth: 2 atau Ganjil" className="w-full border-gray-300 rounded-lg focus:ring-polman-primary text-sm" value={data.semester} onChange={e => setData('semester', e.target.value)} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Jenis MK <span className="text-red-500">*</span></label>
+                                    <select className="w-full border-gray-300 rounded-lg focus:ring-polman-primary text-sm bg-white" value={data.jenis} onChange={e => setData('jenis', e.target.value as 'Teori' | 'Praktek')}>
+                                        <option value="Teori">Teori</option>
+                                        <option value="Praktek">Praktek</option>
+                                    </select>
+                                </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Nama Mata Kuliah <span className="text-red-500">*</span></label>
-                                <input type="text" className="w-full border-gray-300 rounded-lg focus:ring-polman-primary text-sm" value={data.nama_mk} onChange={e => setData('nama_mk', e.target.value)} required />
-                                {errors.nama_mk && <p className="text-red-500 text-xs mt-1">{errors.nama_mk}</p>}
+                            {/* STEP C: Ditambahkan ke Grid ini, diubah menjadi cols-3 */}
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Sifat Pengambilan</label>
+                                    <select className="w-full border-gray-300 rounded-lg focus:ring-polman-primary text-sm bg-white" value={data.sifat_pengambilan} onChange={e => setData('sifat_pengambilan', e.target.value)}>
+                                        <option value="Wajib">Wajib</option>
+                                        <option value="Pilihan">Pilihan</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Cara Pembelajaran</label>
+                                    <select className="w-full border-gray-300 rounded-lg focus:ring-polman-primary text-sm bg-white" value={data.cara_pembelajaran} onChange={e => setData('cara_pembelajaran', e.target.value)}>
+                                        <option value="Tatap Muka">Tatap Muka</option>
+                                        <option value="Daring">Daring</option>
+                                        <option value="Bauran (Blended)">Bauran (Blended)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Prasyarat</label>
+                                    <select 
+                                        className="w-full border-gray-300 rounded-lg focus:ring-polman-primary text-sm bg-white" 
+                                        value={data.prasyarat_id || ''} 
+                                        onChange={e => setData('prasyarat_id', e.target.value === '' ? null : Number(e.target.value))}
+                                    >
+                                        <option value="">- Tidak Ada -</option>
+                                        {mataKuliahs.map((mkOption) => (
+                                            mkOption.id !== selectedId && (
+                                                <option key={mkOption.id} value={mkOption.id}>
+                                                    {mkOption.kode_mk}
+                                                </option>
+                                            )
+                                        ))}
+                                    </select>
+                                    {errors.prasyarat_id && <p className="text-red-500 text-xs mt-1">{errors.prasyarat_id}</p>}
+                                </div>
                             </div>
+
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-1">Deskripsi</label>
                                 <textarea rows={3} className="w-full border-gray-300 rounded-lg focus:ring-polman-primary text-sm" value={data.deskripsi} onChange={e => setData('deskripsi', e.target.value)} />
                             </div>
+
                             <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-lg">Batal</button>
                                 <button type="submit" className="bg-polman-primary hover:bg-polman-secondary text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm" disabled={processing}>{processing ? 'Menyimpan...' : 'Simpan Data'}</button>

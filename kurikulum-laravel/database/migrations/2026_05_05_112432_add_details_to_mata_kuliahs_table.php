@@ -8,16 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->renameColumn('signature_path', 'nip');
-            // $table->string('nip')->unique()->change(); // Opsional: Aktifkan jika NIP harus unik
+        Schema::table('mata_kuliahs', function (Blueprint $table) {
+            $table->string('semester', 20)->nullable()->after('deskripsi');
+            $table->string('sifat_pengambilan', 50)->nullable()->after('semester'); // Cth: Wajib / Pilihan
+            $table->string('cara_pembelajaran', 100)->nullable()->after('sifat_pengambilan'); // Cth: Tatap Muka
         });
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->renameColumn('nip', 'signature_path');
+        Schema::table('mata_kuliahs', function (Blueprint $table) {
+            $table->dropColumn(['semester', 'sifat_pengambilan', 'cara_pembelajaran']);
         });
     }
 };
