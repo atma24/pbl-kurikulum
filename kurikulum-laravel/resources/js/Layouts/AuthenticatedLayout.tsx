@@ -17,7 +17,7 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                                currentUrl.startsWith('/indikator-kinerja') ||
                                currentUrl.startsWith('/mata-kuliah') || 
                                currentUrl.startsWith('/cpmk'); // CPMK juga masuk ke ranah MK
-                               currentUrl.startsWith('/signature'); // Halaman Tanda Tangan Digital juga masuk ke ranah Master Data
+                                
 
     // State untuk mengontrol buka/tutup folder
     const [isMasterFolderOpen, setIsMasterFolderOpen] = useState(isMasterDataActive);
@@ -64,7 +64,15 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                         >
                             <span>Curriculum Map</span>
                         </Link>
-
+                                <Link
+                                href={route('rps.index')}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/rps')
+                                    ? 'bg-polman-neutral text-polman-primary border-l-4 border-polman-primary'
+                                    : 'text-gray-500 hover:bg-gray-50 hover:text-polman-secondary border-l-4 border-transparent'
+                                    }`}
+                            >
+                                <span>Rencana Pembelajaran (RPS)</span>
+                            </Link>
                         {/* --- FOLDER MASTER DATA (Sistem Lipat) --- */}   
                         <div className="mt-6 mb-2">
                             {/* Tombol Toggle Folder */}

@@ -12,7 +12,7 @@ use App\Http\Controllers\IndikatorKinerjaController;
 use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\CpmkController;
 use App\Http\Controllers\SignatureController;
-
+use App\Http\Controllers\RpsController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -68,6 +68,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/iea/{iea}', [IeaController::class, 'destroy'])->name('iea.destroy');
 
     Route::resource('mata-kuliah', MataKuliahController::class)->except(['create', 'show', 'edit']);
+    Route::resource('rps', RpsController::class)->except(['show']);
+
+    // 2. API Endpoint JSON (Untuk menarik matriks CPL & CPMK saat MK dipilih di Form RPS)
+    Route::get('/api/mata-kuliah/{id}/rps-data', [MataKuliahController::class, 'apiGetRpsData'])
+        ->name('api.mk.rps-data');
     // --- GULUNGAN RUTE MATA KULIAH ---
 Route::prefix('mata-kuliah')->group(function () {
         Route::get('/', [MataKuliahController::class, 'index'])->name('mata-kuliah.index');
