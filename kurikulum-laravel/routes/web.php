@@ -12,7 +12,14 @@ use App\Http\Controllers\IndikatorKinerjaController;
 use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\CpmkController;
 use App\Http\Controllers\SignatureController;
+use App\Http\Controllers\DosenController;
 
+// Group rute khusus Kaprodi
+Route::middleware(['auth', 'role:Kaprodi'])->group(function () {
+    Route::get('/dosen', [DosenController::class, 'index'])->name('dosen.index');
+    Route::get('/dosen/create', [DosenController::class, 'create'])->name('dosen.create');
+    Route::post('/dosen', [DosenController::class, 'store'])->name('dosen.store');
+});
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
