@@ -2,30 +2,27 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Tenant;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
-     * Seed the application's database.
+     * Seed the application's central database (Landlord).
      */
     public function run(): void
     {
-        // Jalankan RolePermissionSeeder terlebih dahulu
-        $this->call(RolePermissionSeeder::class);
+        // 1. Definisi Data Master Prodi
+        $tenants = [
+            ['id' => 'trin', 'domain' => 'trin.localhost'],
+            ['id' => 'tro', 'domain' => 'tro.localhost'],
+            ['id' => 'trmo', 'domain' => 'trmo.localhost'],
+        ];
 
-        // User::factory(10)->create();
-
-        $user = User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-
-        // Assign role 'Dosen' ke test user
-        $user->assignRole('Dosen');
+        // 2. Injeksi Tenant & Domain ke Database Pusat
+        foreach ($tenants as $data) {
+            $tenant = Tenant::firstOrCreate(['id' => $data['id']]);
+            $tenant->domains()->firstOrCreate(['domain' => $data['domain']]);
+        }
     }
 }
