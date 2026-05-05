@@ -11,7 +11,7 @@ use App\Http\Controllers\MatrixController;
 use App\Http\Controllers\IndikatorKinerjaController;
 use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\CpmkController;
-
+use App\Http\Controllers\SignatureController;
 
 
 Route::get('/', function () {
@@ -57,7 +57,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/ppm', [PpmController::class, 'store'])->name('ppm.store');
     Route::patch('/ppm/{ppm}', [PpmController::class, 'update'])->name('ppm.update');
     Route::delete('/ppm/{ppm}', [PpmController::class, 'destroy'])->name('ppm.destroy');
-
+    // Rute Tanda Tangan Digital
+    Route::get('/profile/signature', [SignatureController::class, 'edit'])->name('signature.edit');
+    // Wajib PUT karena Inertia mengirim _method: 'PUT' untuk file upload
+    Route::put('/profile/signature', [SignatureController::class, 'update'])->name('signature.update');
     // IEA Routes
     Route::get('/iea', [IeaController::class, 'index'])->name('iea.index');
     Route::post('/iea', [IeaController::class, 'store'])->name('iea.store');

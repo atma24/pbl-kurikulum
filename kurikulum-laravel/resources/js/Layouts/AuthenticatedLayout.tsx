@@ -17,6 +17,7 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                                currentUrl.startsWith('/indikator-kinerja') ||
                                currentUrl.startsWith('/mata-kuliah') || 
                                currentUrl.startsWith('/cpmk'); // CPMK juga masuk ke ranah MK
+                               currentUrl.startsWith('/signature'); // Halaman Tanda Tangan Digital juga masuk ke ranah Master Data
 
     // State untuk mengontrol buka/tutup folder
     const [isMasterFolderOpen, setIsMasterFolderOpen] = useState(isMasterDataActive);
@@ -133,6 +134,12 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                                         }`}
                                 >
                                     <span>Indikator Kinerja</span>
+                                </Link>
+                                <Link 
+                                    href={route('signature.edit')} 
+                                    className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
+                                >
+                                    Tanda Tangan Digital
                                 </Link>
                             </div>
                         </div>
