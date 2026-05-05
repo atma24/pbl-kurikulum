@@ -18,6 +18,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'nip'  => ['nullable', 'string', 'max:50'], // Injeksi validasi NIP baru
             'email' => [
                 'required',
                 'string',

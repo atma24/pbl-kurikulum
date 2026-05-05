@@ -32,7 +32,10 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                // Kita injeksi roles dan permissions agar Frontend bisa baca
+                'user' => $request->user() ? array_merge($request->user()->toArray(), [
+                    'roles' => $request->user()->getRoleNames(), // Fitur bawaan Spatie
+                ]) : null,
             ],
         ];
     }
