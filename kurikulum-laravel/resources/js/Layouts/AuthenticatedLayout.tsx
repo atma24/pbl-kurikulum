@@ -6,21 +6,25 @@ interface Props {
 }
 
 export default function AuthenticatedLayout({ header, children }: PropsWithChildren<Props>) {
-    const user = usePage().props.auth.user;
+    // 1. Ambil data user beserta roles/permissions dari Inertia Props
+    // Pastikan HandleInertiaRequests.php Anda sudah mengirimkan 'roles' ke frontend
+    const { user, roles } = usePage().props.auth as any; 
     const currentUrl = usePage().url;
 
     // --- LOGIKA FOLDER SIDEBAR ---
-    // Cek apakah kita sedang berada di dalam halaman Master Data (termasuk Mata Kuliah & CPMK)
     const isMasterDataActive = currentUrl.startsWith('/cpl') || 
                                currentUrl.startsWith('/ppm') || 
                                currentUrl.startsWith('/iea') || 
                                currentUrl.startsWith('/indikator-kinerja') ||
                                currentUrl.startsWith('/mata-kuliah') || 
-                               currentUrl.startsWith('/cpmk'); // CPMK juga masuk ke ranah MK
-                               currentUrl.startsWith('/signature'); // Halaman Tanda Tangan Digital juga masuk ke ranah Master Data
+                               currentUrl.startsWith('/cpmk') ||
+                               currentUrl.startsWith('/signature');
 
-    // State untuk mengontrol buka/tutup folder
     const [isMasterFolderOpen, setIsMasterFolderOpen] = useState(isMasterDataActive);
+
+    // 2. Fungsi Helper untuk cek Role Kaprodi
+    // Mengasumsikan Anda mengirim array of roles: ['Kaprodi', 'Dosen']
+    const isKaprodi = roles?.includes('Kaprodi');
 
     return (
         <div className="flex h-screen w-full bg-polman-neutral overflow-hidden font-body">
@@ -65,7 +69,23 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                             <span>Curriculum Map</span>
                         </Link>
 
-                        {/* --- FOLDER MASTER DATA (Sistem Lipat) --- */}   
+                        {/* --- MENU EKSKLUSIF KAPRODI --- */}
+                        {isKaprodi && (
+                            <Link
+                                href={route('dosen.index')}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/dosen')
+                                    ? 'bg-polman-neutral text-polman-primary border-l-4 border-polman-primary'
+                                    : 'text-gray-500 hover:bg-gray-50 hover:text-polman-secondary border-l-4 border-transparent'
+                                    }`}
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                                <span>Manajemen Dosen</span>
+                            </Link>
+                        )}
+
+                        {/* --- FOLDER MASTER DATA --- */}   
                         <div className="mt-6 mb-2">
                             {/* Tombol Toggle Folder */}
                             <button
@@ -85,7 +105,6 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                             {/* Isi Folder (Mata Kuliah, CPL, PPM, IEA, Indikator Kinerja) */}
                             <div className={`space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${isMasterFolderOpen ? 'max-h-[400px] opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
                                 
-                                {/* --- MENU MATA KULIAH --- */}
                                 <Link
                                     href={route('mata-kuliah.index')}
                                     className={`flex items-center gap-3 px-4 py-2.5 ml-2 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/mata-kuliah') || currentUrl.startsWith('/cpmk')
