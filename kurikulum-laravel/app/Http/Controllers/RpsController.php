@@ -8,27 +8,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-
+use Barryvdh\DomPDF\Facade\Pdf;
 class RpsController extends Controller
 {
-// app/Http/Controllers/RpsController.php
-
 public function index()
-{
-    $rps = Rps::with(['mataKuliah:id,kode_mk,nama_mk', 'dosen:id,name'])->get();
-    $mataKuliahs = MataKuliah::select('id', 'kode_mk', 'nama_mk')->get();
-
-    // UBAH: 'Rps/Index' menjadi 'Rps/page'
-    return Inertia::render('Rps/page', [
-        'rps' => $rps,
-        'mataKuliahs' => $mataKuliahs
-    ]);
-}
-
-    public function create()
     {
+        // UBAH BARIS INI: Tambahkan penilaians dan details
+        $rps = Rps::with(['mataKuliah:id,kode_mk,nama_mk', 'dosen:id,name', 'penilaians', 'details'])->get();
+        
+        $mataKuliahs = MataKuliah::select('id', 'kode_mk', 'nama_mk')->get();
+
         return Inertia::render('Rps/page', [
-            'mataKuliahs' => MataKuliah::select('id', 'kode_mk', 'nama_mk')->get()
+            'rps' => $rps,
+            'mataKuliahs' => $mataKuliahs
         ]);
     }
 
@@ -37,8 +29,6 @@ public function index()
         $validated = $this->validateRps($request);
 
         DB::transaction(function () use ($validated, $request) {
-            $ttePath = $request->file('tte')->store('rps_tte', 'public');
-
             $rps = Rps::create([
                 'mata_kuliah_id'     => $validated['mata_kuliah_id'],
                 'dosen_id'           => $request->user()->id,
@@ -46,10 +36,14 @@ public function index()
                 'tanggal_penyusunan' => $validated['tanggal_penyusunan'],
                 'pustaka_utama'      => $validated['pustaka_utama'],
                 'pustaka_pendukung'  => $validated['pustaka_pendukung'] ?? null,
-                'tte_path'           => $ttePath,
+                'bahan_kajian_utama' => $validated['bahan_kajian_utama'],
+                // Simpan 3 file
+                'tte_dosen'          => $request->file('tte_dosen')->store('rps_tte', 'public'),
+                'tte_kaprodi'        => $request->file('tte_kaprodi')->store('rps_tte', 'public'),
+                'tte_kajur'          => $request->file('tte_kajur')->store('rps_tte', 'public'),
+                'kode_dokumen'       => $validated['kode_dokumen'], // <--- Tambah baris ini
             ]);
 
-            // Eksekusi Mass Insert
             $rps->penilaians()->createMany($validated['penilaians']);
             $rps->details()->createMany($validated['details']);
         });
@@ -57,18 +51,10 @@ public function index()
         return redirect()->route('rps.index')->with('success', 'RPS berhasil ditempa.');
     }
 
-    public function edit(Rps $rps)
+    // Bypass error huruf "s" dengan memakai $id
+    public function update(Request $request, $id)
     {
-        $rps->load(['mataKuliah', 'penilaians', 'details']);
-        
-        return Inertia::render('Rps/Edit', [
-            'rpsData' => $rps,
-            'mataKuliahs' => MataKuliah::select('id', 'kode_mk', 'nama_mk')->get()
-        ]);
-    }
-
-    public function update(Request $request, Rps $rps)
-    {
+        $rps = Rps::findOrFail($id);
         $validated = $this->validateRps($request, true);
 
         DB::transaction(function () use ($validated, $request, $rps) {
@@ -78,20 +64,21 @@ public function index()
                 'tanggal_penyusunan' => $validated['tanggal_penyusunan'],
                 'pustaka_utama'      => $validated['pustaka_utama'],
                 'pustaka_pendukung'  => $validated['pustaka_pendukung'] ?? null,
+                'bahan_kajian_utama' => $validated['bahan_kajian_utama'],
+                'kode_dokumen'       => $validated['kode_dokumen'], // <--- Tambah baris ini
             ];
 
-    // 2. Pada method update() - bagian ganti file TTE
-        if ($request->hasFile('tte')) {
-            if ($rps->tte_path) {
-                Storage::disk('public')->delete($rps->tte_path);
+            // Cek dan ganti masing-masing TTE jika ada file baru
+            $ttes = ['tte_dosen', 'tte_kaprodi', 'tte_kajur'];
+            foreach ($ttes as $tte) {
+                if ($request->hasFile($tte)) {
+                    if ($rps->$tte) Storage::disk('public')->delete($rps->$tte);
+                    $data[$tte] = $request->file($tte)->store('rps_tte', 'public');
+                }
             }
-            $data['tte_path'] = $request->file('tte')->store('rps_tte', 'public');
-        }
 
             $rps->update($data);
 
-            // Strategi Wipe-and-Recreate: Hapus data lama, masukkan data baru. 
-            // Paling efisien untuk form repeater dinamis tanpa melacak ID baris satu per satu.
             $rps->penilaians()->delete();
             $rps->penilaians()->createMany($validated['penilaians']);
 
@@ -102,11 +89,15 @@ public function index()
         return redirect()->route('rps.index')->with('success', 'RPS berhasil diperbarui.');
     }
 
-// 1. Pada method destroy()
-    public function destroy(Rps $rps)
+    // Bypass error huruf "s" dengan memakai $id
+    public function destroy($id)
     {
-        if ($rps->tte_path) {
-            Storage::disk('public')->delete($rps->tte_path);
+        $rps = Rps::findOrFail($id);
+
+        // Hapus ketiga file fisiknya
+        $ttes = ['tte_dosen', 'tte_kaprodi', 'tte_kajur'];
+        foreach ($ttes as $tte) {
+            if ($rps->$tte) Storage::disk('public')->delete($rps->$tte);
         }
         
         $rps->delete(); 
@@ -114,11 +105,6 @@ public function index()
         return redirect()->back()->with('success', 'RPS berhasil dilenyapkan.');
     }
 
-
-
-    /**
-     * Sentralisasi aturan validasi RPS
-     */
     private function validateRps(Request $request, $isUpdate = false)
     {
         $tteRule = $isUpdate ? 'nullable' : 'required';
@@ -129,9 +115,12 @@ public function index()
             'tanggal_penyusunan' => 'required|date',
             'pustaka_utama'      => 'required|string',
             'pustaka_pendukung'  => 'nullable|string',
-            'tte'                => "$tteRule|file|mimes:png,jpg,jpeg,pdf|max:2048",
+            'bahan_kajian_utama' => 'required|string', // <-- Validasi Baru
+            'tte_dosen'          => "$tteRule|file|mimes:png,jpg,jpeg,pdf|max:2048",
+            'tte_kaprodi'        => "$tteRule|file|mimes:png,jpg,jpeg,pdf|max:2048",
+            'tte_kajur'          => "$tteRule|file|mimes:png,jpg,jpeg,pdf|max:2048",
+            'kode_dokumen'       => 'required|string',
             
-            // Validasi Matriks Penilaian
             'penilaians'           => 'required|array',
             'penilaians.*.cpmk_id' => 'required|exists:cpmks,id',
             'penilaians.*.quiz'    => 'numeric|min:0|max:100',
@@ -140,7 +129,6 @@ public function index()
             'penilaians.*.uts'     => 'numeric|min:0|max:100',
             'penilaians.*.uas'     => 'numeric|min:0|max:100',
 
-            // Validasi Detail Mingguan
             'details'                        => 'required|array',
             'details.*.minggu_ke'            => 'required|string|max:10',
             'details.*.kemampuan_akhir'      => 'required|string',
@@ -153,4 +141,19 @@ public function index()
             'details.*.penilaian_bobot'      => 'numeric|min:0|max:100',
         ]);
     }
+    public function printPdf($id)
+        {
+            // PERHATIKAN: indikatorKinerjas pakai 's'
+            $rps = Rps::with([
+                'mataKuliah.cpmks.indikatorKinerjas.cpl', 
+                'dosen', 
+                'penilaians.cpmk', 
+                'details'
+            ])->findOrFail($id);
+
+            $pdf = Pdf::loadView('pdf.rps', compact('rps'))
+                    ->setPaper('a4', 'landscape');
+
+            return $pdf->stream('RPS_' . $rps->mataKuliah->kode_mk . '.pdf');
+        }
 }

@@ -6,9 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RpsPenilaian extends Model
 {
-    protected $fillable = [
-        'rps_id', 'cpmk_id', 'quiz', 'tugas', 'project', 'uts', 'uas'
-    ];
+    protected $fillable = ['rps_id', 'cpmk_id', 'quiz', 'tugas', 'project', 'uts', 'uas'];
 
     public function rps()
     {

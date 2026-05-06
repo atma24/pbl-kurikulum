@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Rps extends Model
 {
-    protected $fillable = [
-        'mata_kuliah_id', 'dosen_id', 'tahun_akademik', 
-        'tanggal_penyusunan', 'pustaka_utama', 'pustaka_pendukung', 'tte_path'
-    ];
+protected $fillable = [
+    'mata_kuliah_id', 'dosen_id', 'tahun_akademik', 'kode_dokumen', // <--- Tambah di sini
+    'tanggal_penyusunan', 'pustaka_utama', 'pustaka_pendukung', 
+    'bahan_kajian_utama', 'tte_dosen', 'tte_kaprodi', 'tte_kajur'
+];
 
     public function mataKuliah()
     {

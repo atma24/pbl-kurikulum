@@ -68,6 +68,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/iea/{iea}', [IeaController::class, 'destroy'])->name('iea.destroy');
 
     Route::resource('mata-kuliah', MataKuliahController::class)->except(['create', 'show', 'edit']);
+    Route::get('/rps/{id}/pdf', [RpsController::class, 'printPdf'])->name('rps.pdf');
     Route::resource('rps', RpsController::class)->except(['show']);
 
     // 2. API Endpoint JSON (Untuk menarik matriks CPL & CPMK saat MK dipilih di Form RPS)

@@ -6,11 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RpsDetail extends Model
 {
-    protected $fillable = [
-        'rps_id', 'minggu_ke', 'kemampuan_akhir', 'indikator', 
-        'bahan_kajian', 'metode_pembelajaran', 'estimasi_waktu', 
-        'pengalaman_belajar', 'penilaian_komponen', 'penilaian_bobot'
-    ];
+protected $fillable = ['rps_id', 'minggu_ke', 'kemampuan_akhir', 'indikator', 'bahan_kajian', 'metode_pembelajaran', 'estimasi_waktu', 'pengalaman_belajar', 'penilaian_komponen', 'penilaian_bobot'];
 
     public function rps()
     {
