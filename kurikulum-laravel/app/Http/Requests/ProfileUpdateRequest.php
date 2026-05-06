@@ -17,16 +17,8 @@ class ProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Hanya Nama yang diizinkan untuk diubah oleh Dosen/Kaprodi
             'name' => ['required', 'string', 'max:255'],
-            'nip'  => ['nullable', 'string', 'max:50'], // Injeksi validasi NIP baru
-            'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
-            ],
         ];
     }
 }
