@@ -5,28 +5,37 @@
     <title>Dokumen RPS</title>
     <style>
         body { font-family: 'Times New Roman', Times, serif; font-size: 11px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-        th, td { border: 1px solid #000; padding: 5px; vertical-align: middle; }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 0; 
+        }
+        /* Class sakti untuk menempelkan tabel */
+        .table-nempel {
+            margin-top: -1px; 
+        }
+        /* Mencegah baris terpotong di tengah-tengah teks saat pindah halaman */
+        tr { page-break-inside: avoid; page-break-after: auto; }
+        th, td { border: 1px solid #000; padding: 5px; vertical-align: top; }
+        
         .text-center { text-align: center; }
         .font-bold { font-weight: bold; }
+        .uppercase { text-transform: uppercase; }
         
-        /* Warna Khusus Kop Surat & Tabel */
         .bg-kop { background-color: #e0f2f7; }
         .bg-gray { background-color: #d9d9d9; }
-        
         .tte-img { max-height: 50px; max-width: 90px; }
     </style>
 </head>
 <body>
 
-    <!-- KOP SURAT (SESUAI GAMBAR) -->
+    <!-- KOP SURAT -->
     <table>
         <tr class="bg-kop">
-            <td width="20%" class="text-center">
-                <!-- Pastikan kamu simpan file logo di folder public/images/polman-logo.png -->
+            <td width="20%" class="text-center" style="vertical-align: middle;">
                 <img src="{{ public_path('images/polman-logo.png') }}" alt="Logo Polman" style="width: 80px;">
             </td>
-            <td width="60%" class="text-center font-bold">
+            <td width="60%" class="text-center font-bold" style="vertical-align: middle;">
                 Politeknik Manufaktur Bandung<br>
                 Jurusan Teknik Otomasi Manufaktur dan Mekatronika<br>
                 Program Studi {{ 
@@ -34,7 +43,7 @@
                     ($rps->kode_dokumen == 'RPS_TRO' ? 'Teknologi Rekayasa Otomasi' : 'Teknologi Rekayasa Mekatronika') 
                 }}
             </td>
-            <td width="20%" class="text-center font-bold">
+            <td width="20%" class="text-center font-bold" style="vertical-align: middle;">
                 {{ $rps->kode_dokumen }}_{{ $rps->mataKuliah->kode_mk }}
             </td>
         </tr>
@@ -44,13 +53,13 @@
     </table>
 
     <!-- IDENTITAS MATA KULIAH -->
-    <table>
-        <tr><th colspan="4" class="bg-gray">IDENTITAS MATA KULIAH</th></tr>
+    <table class="table-nempel">
+        <tr><td colspan="4" class="font-bold bg-gray text-center uppercase">Identitas Mata Kuliah</td></tr>
         <tr>
-            <td width="20%" class="font-bold">Mata Kuliah</td>
-            <td width="30%">{{ $rps->mataKuliah->nama_mk }}</td>
-            <td width="20%" class="font-bold">Kode MK</td>
-            <td width="30%">{{ $rps->mataKuliah->kode_mk }}</td>
+            <td width="15%" class="font-bold">Mata Kuliah</td>
+            <td width="35%">{{ $rps->mataKuliah->nama_mk }}</td>
+            <td width="15%" class="font-bold">Kode MK</td>
+            <td width="35%">{{ $rps->mataKuliah->kode_mk }}</td>
         </tr>
         <tr>
             <td class="font-bold">Dosen Pengampu</td>
@@ -59,157 +68,129 @@
             <td>{{ $rps->tahun_akademik }}</td>
         </tr>
         <tr>
-            <td class="font-bold">Tanggal Penyusunan</td>
-            <td colspan="3">{{ \Carbon\Carbon::parse($rps->tanggal_penyusunan)->translatedFormat('d F Y') }}</td>
+            <td class="font-bold">Tgl Penyusunan</td>
+            <td>{{ \Carbon\Carbon::parse($rps->tanggal_penyusunan)->translatedFormat('d F Y') }}</td>
+            <td class="font-bold">MK Prasyarat</td>
+            <td>
+                @if($rps->mataKuliah->prasyarat)
+                    {{ $rps->mataKuliah->prasyarat->nama_mk }} ({{ $rps->mataKuliah->prasyarat->kode_mk }})
+                @else
+                    -
+                @endif
+            </td>
         </tr>
     </table>
-                        
+
     <!-- PENGESAHAN (TTE) -->
-    <table>
-        <tr><th colspan="3" class="bg-gray">OTORISASI / PENGESAHAN</th></tr>
-        <tr>
-            <th width="33.3%">Dosen Pengampu</th>
-            <th width="33.3%">Kepala Program Studi</th>
-            <th width="33.3%">Ketua Jurusan</th>
+    <table class="table-nempel">
+        <tr><td colspan="3" class="font-bold bg-gray text-center uppercase">Otorisasi / Pengesahan</td></tr>
+        <tr class="text-center font-bold">
+            <td width="33.3%">Dosen Pengampu</td>
+            <td width="33.3%">Kepala Program Studi</td>
+            <td width="33.3%">Ketua Jurusan</td>
         </tr>
         <tr class="text-center">
-            <td style="height: 60px;">
+            <td style="height: 60px; vertical-align: middle;">
                 @if($rps->tte_dosen) <img src="{{ public_path('storage/' . $rps->tte_dosen) }}" class="tte-img"> @endif
             </td>
-            <td style="height: 60px;">
+            <td style="height: 60px; vertical-align: middle;">
                 @if($rps->tte_kaprodi) <img src="{{ public_path('storage/' . $rps->tte_kaprodi) }}" class="tte-img"> @endif
             </td>
-            <td style="height: 60px;">
+            <td style="height: 60px; vertical-align: middle;">
                 @if($rps->tte_kajur) <img src="{{ public_path('storage/' . $rps->tte_kajur) }}" class="tte-img"> @endif
             </td>
         </tr>
     </table>
-                        <!-- DESKRIPSI, CPL, INDIKATOR, DAN CPMK -->
+
+    <!-- DESKRIPSI, CPL, INDIKATOR, DAN CPMK -->
     @php
-        // 1. Ekstrak data CPMK dari Mata Kuliah
         $cpmks = $rps->mataKuliah->cpmks ?? collect();
-        
-        // 2. Kumpulkan semua Indikator Kinerja dari Many-to-Many
         $indikators = collect();
         foreach($cpmks as $cpmk) {
             foreach($cpmk->indikatorKinerjas as $ik) {
                 $indikators->push($ik);
             }
         }
-        // Buang duplikat agar CPL tidak ter-print berkali-kali
         $uniqueIndikators = $indikators->unique('id');
-        
-        // 3. Hitung ROWSPAN (tinggi baris) dinamis
-        $jmlIndikator = $uniqueIndikators->count() > 0 ? $uniqueIndikators->count() : 1;
-        $jmlCpmk = $cpmks->count() > 0 ? $cpmks->count() : 1;
-        $rowspanCpl = 1 + $jmlIndikator + 1 + $jmlCpmk; 
     @endphp
 
-    <table>
-        <!-- DESKRIPSI MATA KULIAH -->
+    <table class="table-nempel">
         <tr>
-            <td width="15%" class="font-bold uppercase">Deskripsi Singkat</td>
-            <td colspan="4">
+            <td width="15%" class="font-bold bg-gray">Deskripsi Singkat</td>
+            <td colspan="3" width="85%">
                 {{ $rps->mataKuliah->deskripsi ?? 'Tidak ada deskripsi.' }}
             </td>
         </tr>
-
-        <!-- HEADER CPL -->
         <tr>
-            <td rowspan="{{ $rowspanCpl }}" class="font-bold uppercase" style="vertical-align: top;">
-                Capaian Pembelajaran (CPL)
-            </td>
-            <td colspan="2" class="text-center font-bold bg-gray">CPL-PRODI yang dibebankan pada MK</td>
-            <td colspan="2" class="text-center font-bold bg-gray">Indikator Kinerja</td>
+            <td colspan="4" class="font-bold uppercase bg-gray text-center">Capaian Pembelajaran (CPL)</td>
+        </tr>
+        <tr class="font-bold bg-gray text-center">
+            <td colspan="2" width="50%">CPL-PRODI yang dibebankan pada MK</td>
+            <td colspan="2" width="50%">Indikator Kinerja</td>
         </tr>
         
-        <!-- LOOP DATA CPL & INDIKATOR -->
         @forelse($uniqueIndikators as $ind)
         <tr>
-            <!-- Fallback: Coba kode_cpl, jika tidak ada pakai kode biasa -->
-            <td width="10%" class="text-center">{{ $ind->cpl->kode_cpl ?? $ind->cpl->kode ?? '-' }}</td>
-            <td width="30%">{{ $ind->cpl->deskripsi ?? '-' }}</td>
-            
-            <td width="10%" class="text-center">{{ $ind->kode ?? '-' }}</td>
+            <td width="15%" class="text-center font-bold">{{ $ind->cpl->kode_cpl ?? $ind->cpl->kode ?? '-' }}</td>
+            <td width="35%">{{ $ind->cpl->deskripsi ?? '-' }}</td>
+            <td width="15%" class="text-center font-bold">{{ $ind->kode ?? '-' }}</td>
             <td width="35%">{{ $ind->deskripsi ?? '-' }}</td>
         </tr>
         @empty
-        <tr><td colspan="4" class="text-center text-gray-500">Data CPL/Indikator belum dipetakan di Master Data.</td></tr>
+        <tr><td colspan="4" class="text-center text-gray-500">Data CPL/Indikator belum dipetakan.</td></tr>
         @endforelse
 
-        <!-- HEADER CPMK -->
         <tr>
-            <td colspan="4" class="font-bold bg-gray">Capaian Pembelajaran Mata Kuliah (CPMK)</td>
+            <td colspan="4" class="font-bold uppercase bg-gray text-center">Capaian Pembelajaran Mata Kuliah (CPMK)</td>
         </tr>
-
-        <!-- LOOP DATA CPMK -->
         @forelse($cpmks as $cpmk)
         <tr>
-            <!-- Karena 1 CPMK bisa punya banyak Indikator, kita gabungkan kodenya pakai koma -->
-            <td class="text-center font-bold">
-                {{ $cpmk->indikatorKinerjas->pluck('kode')->join(', ') ?: '-' }}
-            </td>
-            <td width="10%" class="font-bold text-center">{{ $cpmk->kode_cpmk }}</td>
-            <td colspan="2">{{ $cpmk->deskripsi }}</td>
+            <td class="text-center font-bold">{{ $cpmk->indikatorKinerjas->pluck('kode')->join(', ') ?: '-' }}</td>
+            <td width="15%" class="font-bold text-center">{{ $cpmk->kode_cpmk }}</td>
+            <td colspan="2" width="70%">{{ $cpmk->deskripsi }}</td>
         </tr>
         @empty
-        <tr><td colspan="4" class="text-center text-gray-500">Data CPMK belum ada di Master Data.</td></tr>
+        <tr><td colspan="4" class="text-center text-gray-500">Data CPMK belum ada.</td></tr>
         @endforelse
     </table>
-    <!-- BAHAN KAJIAN & PUSTAKA -->
-    <table>
+
+    <!-- BAHAN KAJIAN (DIPINDAH KE SINI) -->
+    <table class="table-nempel">
         <tr>
-            <td width="20%" class="font-bold">Bahan Kajian Utama</td>
-            <td width="80%">{!! nl2br(e($rps->bahan_kajian_utama)) !!}</td>
-        </tr>
-        <tr>
-            <td class="font-bold">Pustaka Utama</td>
-            <td>{!! nl2br(e($rps->pustaka_utama)) !!}</td>
-        </tr>
-        <tr>
-            <td class="font-bold">Pustaka Pendukung</td>
-            <td>{!! nl2br(e($rps->pustaka_pendukung)) !!}</td>
+            <td width="15%" class="font-bold bg-gray uppercase">Bahan Kajian</td>
+            <td width="85%">{!! nl2br(e($rps->bahan_kajian_utama)) !!}</td>
         </tr>
     </table>
-
-    <!-- MATRIKS PENILAIAN DENGAN TOTAL OTOMATIS -->
+                        
+    <!-- MATRIKS PENILAIAN -->
     @if($rps->penilaians->count() > 0)
-    Sistem <b>evaluasi</b> atau <b>penilaian</b> diberikan dengan ketentuan sebagai berikut:
-    <table style="margin-top: 5px;">
+    <table class="table-nempel">
+        <tr><td colspan="7" class="font-bold uppercase bg-gray text-center">Sistem Evaluasi (Bobot %)</td></tr>
         <tr class="text-center font-bold bg-gray">
-            <td rowspan="2" width="15%">CPMK</td>
+            <td rowspan="2" width="10%" style="vertical-align: middle;">CPMK</td>
             <td colspan="5">Bobot per Bentuk Penilaian (%)</td>
-            <td rowspan="2" width="15%">Total Bobot Per CPMK</td>
+            <td rowspan="2" width="15%" style="vertical-align: middle;">Total Bobot</td>
         </tr>
         <tr class="text-center font-bold bg-gray">
-            <td>Quiz</td>
-            <td>Tugas</td>
-            <td>Project</td>
-            <td>UTS</td>
-            <td>UAS</td>
+            <td width="15%">Quiz</td>
+            <td width="15%">Tugas</td>
+            <td width="15%">Project</td>
+            <td width="15%">UTS</td>
+            <td width="15%">UAS</td>
         </tr>
         
         @php
-            // Variabel Penampung Kolom
-            $sumQuiz = 0; $sumTugas = 0; $sumProject = 0; $sumUts = 0; $sumUas = 0;
-            $grandTotal = 0;
+            $sumQuiz = 0; $sumTugas = 0; $sumProject = 0; $sumUts = 0; $sumUas = 0; $grandTotal = 0;
         @endphp
 
         @foreach($rps->penilaians as $nilai)
             @php
-                // Kalkulasi Baris
                 $rowTotal = $nilai->quiz + $nilai->tugas + $nilai->project + $nilai->uts + $nilai->uas;
-                
-                // Tambahkan ke Total Kolom
-                $sumQuiz += $nilai->quiz;
-                $sumTugas += $nilai->tugas;
-                $sumProject += $nilai->project;
-                $sumUts += $nilai->uts;
-                $sumUas += $nilai->uas;
-                $grandTotal += $rowTotal;
+                $sumQuiz += $nilai->quiz; $sumTugas += $nilai->tugas; $sumProject += $nilai->project;
+                $sumUts += $nilai->uts; $sumUas += $nilai->uas; $grandTotal += $rowTotal;
             @endphp
             <tr class="text-center">
-                <td>{{ $nilai->cpmk->kode_cpmk ?? 'N/A' }}</td>
+                <td class="font-bold">{{ $nilai->cpmk->kode_cpmk ?? 'N/A' }}</td>
                 <td>{{ $nilai->quiz > 0 ? floatval($nilai->quiz) : '-' }}</td>
                 <td>{{ $nilai->tugas > 0 ? floatval($nilai->tugas) : '-' }}</td>
                 <td>{{ $nilai->project > 0 ? floatval($nilai->project) : '-' }}</td>
@@ -218,10 +199,8 @@
                 <td class="font-bold">{{ floatval($rowTotal) }}</td>
             </tr>
         @endforeach
-
-        <!-- BARIS TOTAL BAWAH -->
         <tr class="text-center font-bold bg-gray">
-            <td style="text-align: left;">Total Penilaian</td>
+            <td>Total</td>
             <td>{{ floatval($sumQuiz) }}</td>
             <td>{{ floatval($sumTugas) }}</td>
             <td>{{ floatval($sumProject) }}</td>
@@ -232,22 +211,65 @@
     </table>
     @endif
 
-    <div style="page-break-before: always;"></div>
-    
-    <!-- DETAIL MINGGUAN -->
-    <table>
-        <tr><th colspan="6" class="bg-gray">RENCANA PEMBELAJARAN MINGGUAN</th></tr>
+    <!-- PUSTAKA & HURUF MUTU -->
+    <table class="table-nempel">
         <tr>
-            <th width="5%">Mg Ke</th>
-            <th width="20%">Kemampuan Akhir</th>
-            <th width="20%">Bahan Kajian</th>
-            <th width="20%">Metode & Waktu</th>
-            <th width="25%">Pengalaman & Indikator</th>
-            <th width="10%">Bobot (%)</th>
+            <td width="15%" class="font-bold bg-gray uppercase" rowspan="3" style="vertical-align: top;">Pustaka</td>
+            <td width="85%" style="background-color: #eaeaea; padding: 6px;">
+                <strong>Penilaian Huruf Mutu</strong><br>
+                Hasil kumulatif evaluasi selanjutnya akan ditampilkan dalam bentuk huruf mutu (skoring) dengan kriteria bobot sebagai berikut:
+                
+                <table style="width: 100%; border-collapse: collapse; margin-top: 4px; margin-bottom: 4px; background-color: #eaeaea;">
+                    <tr>
+                        <td style="border: 1px solid #a0a0a0; padding: 3px; width: 33%;">A : Nilai &gt;= 85</td>
+                        <td style="border: 1px solid #a0a0a0; padding: 3px; width: 33%;">BC : 63 &lt;= Nilai &lt; 70</td>
+                        <td style="border: 1px solid #a0a0a0; padding: 3px; width: 34%;">E : Nilai &lt; 40</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #a0a0a0; padding: 3px;">AB : 78 &lt;= Nilai &lt; 85</td>
+                        <td style="border: 1px solid #a0a0a0; padding: 3px;">C : 55 &lt;= Nilai &lt; 63</td>
+                        <td style="border: 1px solid #a0a0a0; padding: 3px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #a0a0a0; padding: 3px;">B : 70 &lt;= Nilai &lt; 78</td>
+                        <td style="border: 1px solid #a0a0a0; padding: 3px;">D : 40 &lt;= Nilai &lt; 55</td>
+                        <td style="border: 1px solid #a0a0a0; padding: 3px; text-align: center;">Nilai TL (komponen nilai tidak lengkap)</td>
+                    </tr>
+                </table>
+                
+                X: Ambang batas persentase minimal kelulusan CPMK=55%<br>
+                Y: Ambang batas minimal persentse jumlah mahasiswa yang lulus CPMK matakuliah=50%<br>
+                <em>Key Performance Indicator (KPI): X=50% dan Y=55%</em>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 6px;">
+                <strong>Pustaka Utama:</strong><br>
+                {!! nl2br(e($rps->pustaka_utama)) !!}
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 6px;">
+                <strong>Pustaka Pendukung:</strong><br>
+                {!! nl2br(e($rps->pustaka_pendukung)) !!}
+            </td>
+        </tr>
+    </table>
+
+    <!-- DETAIL MINGGUAN -->
+    <table class="table-nempel">
+        <tr><td colspan="6" class="font-bold uppercase bg-gray text-center">Rencana Pembelajaran Mingguan</td></tr>
+        <tr class="text-center font-bold bg-gray">
+            <td width="5%">Mg Ke</td>
+            <td width="20%">Kemampuan Akhir</td>
+            <td width="25%">Bahan Kajian</td>
+            <td width="15%">Metode & Waktu</td>
+            <td width="25%">Pengalaman & Indikator</td>
+            <td width="10%">Bobot (%)</td>
         </tr>
         @foreach($rps->details as $dt)
         <tr>
-            <td class="text-center">{{ $dt->minggu_ke }}</td>
+            <td class="text-center font-bold">{{ $dt->minggu_ke }}</td>
             <td>{!! nl2br(e($dt->kemampuan_akhir)) !!}</td>
             <td>{!! nl2br(e($dt->bahan_kajian)) !!}</td>
             <td>
@@ -259,7 +281,7 @@
                 <b>Indikator:</b><br>{{ $dt->indikator }}<br><br>
                 <b>Komponen:</b> {{ $dt->penilaian_komponen }}
             </td>
-            <td class="text-center">{{ floatval($dt->penilaian_bobot) }}</td>
+            <td class="text-center font-bold">{{ floatval($dt->penilaian_bobot) }}</td>
         </tr>
         @endforeach
     </table>

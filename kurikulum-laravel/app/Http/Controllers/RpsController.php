@@ -148,7 +148,8 @@ class RpsController extends Controller
             'mataKuliah.cpmks.indikatorKinerjas.cpl', 
             'dosen', 
             'penilaians.cpmk', 
-            'details'
+            'details',
+            'mataKuliah.prasyarat',
         ])->findOrFail($id);
 
         $pdf = Pdf::loadView('pdf.rps', compact('rps'))->setPaper('a4', 'landscape');
@@ -164,7 +165,8 @@ class RpsController extends Controller
             'mataKuliah.cpmks.indikatorKinerjas.cpl', 
             'dosen', 
             'penilaians.cpmk', 
-            'details'
+            'details',
+            'mataKuliah.prasyarat',
         ])->findOrFail($id);
 
         $pdf = Pdf::loadView('pdf.rps', compact('rps'))->setPaper('a4', 'landscape');

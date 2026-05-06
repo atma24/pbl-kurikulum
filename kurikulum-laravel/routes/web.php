@@ -100,6 +100,16 @@ Route::middleware(['auth', 'role:Kaprodi'])->group(function () {
     Route::post('/matrix/sync-cpl-iea', [MatrixController::class, 'syncCplIea'])->name('matrix.sync-cpl-iea');
     Route::post('/matrix/sync-ppm-iea', [MatrixController::class, 'syncPpmIea'])->name('matrix.sync-ppm-iea');
     Route::post('/matrix/sync-mk-cpl', [MatrixController::class, 'syncMkCpl'])->name('matrix.sync-mk-cpl');
+    Route::prefix('cpmk')->group(function () {
+        Route::get('/mk/{mata_kuliah_id}', [CpmkController::class, 'index'])->name('cpmk.index');
+        Route::post('/', [CpmkController::class, 'store'])->name('cpmk.store');
+        
+        // --- TAMBAHKAN DUA BARIS INI UNTUK UPDATE CPMK ---
+        Route::put('/{cpmk}', [CpmkController::class, 'update'])->name('cpmk.update');
+        Route::patch('/{cpmk}', [CpmkController::class, 'update']);
+        
+        Route::delete('/{cpmk}', [CpmkController::class, 'destroy'])->name('cpmk.destroy');
+    });
 });
 
 require __DIR__.'/auth.php';
