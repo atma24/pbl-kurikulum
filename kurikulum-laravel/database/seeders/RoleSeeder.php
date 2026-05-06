@@ -16,7 +16,7 @@ class RoleSeeder extends Seeder
 
         // Ciptakan Role
         Role::create(['name' => 'Kaprodi']);
-        Role::create(['name' => 'Atmin']);
+        Role::create(['name' => 'Dosen']);
 
         // Ciptakan Akun Kaprodi (Super Admin)
         $kaprodi = User::create([

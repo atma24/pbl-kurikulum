@@ -24,29 +24,37 @@ Route::get('/', function () {
     ]);
 });
 
-// --- ZONA AMAN (AUTENTIKASI UMUM) ---
+// ==============================================================
+// ZONA 1: AKSES UNIVERSAL (SEMUA ROLE YANG LOGIN)
+// ==============================================================
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
-    // rps
-    Route::resource('rps', RpsController::class)->except(['show']);
 
-    // 2. Rute Print Preview PDF (Buka di browser / tab baru)
-    Route::get('/rps/{id}/pdf', [RpsController::class, 'printPdf'])->name('rps.pdf');
-
-    // 3. Rute Download PDF (Otomatis langsung mengunduh file)
-    Route::get('/rps/{id}/download', [RpsController::class, 'downloadPdf'])->name('rps.download');
-    // Profile & Signature (Akses Universal)
+    // Profile & Signature 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
-    // Rute Mata Kuliah & CPMK (Dosen butuh akses READ untuk memilih MK, dan akses WRITE untuk mengisi CPMK)
+
+// ==============================================================
+// ZONA 2: HANYA KAPRODI & DOSEN
+// Menggunakan tanda | (OR) agar kedua role bisa akses
+// ==============================================================
+Route::middleware(['auth', 'role:Kaprodi|Dosen'])->group(function () {
+    
+    // Fitur RPS Utama
+    Route::resource('rps', RpsController::class)->except(['show']);
+    Route::get('/rps/{id}/pdf', [RpsController::class, 'printPdf'])->name('rps.pdf');
+    Route::get('/rps/{id}/download', [RpsController::class, 'downloadPdf'])->name('rps.download');
+
+    // Mata Kuliah & CPMK
     Route::resource('mata-kuliah', MataKuliahController::class)->except(['create', 'show', 'edit']);
-    Route::prefix('mata-kuliah')->group(function () {
-        Route::get('/{id}/rps-data', [MataKuliahController::class, 'apiGetRpsData'])->name('mata-kuliah.rps-data');
-    });
+    
+    // Rute API Data RPS (Penting untuk Form Matriks Penilaian!)
+    Route::get('/mata-kuliah/{id}/rps-data', [MataKuliahController::class, 'apiGetRpsData'])->name('mata-kuliah.rps-data');
 
     Route::prefix('cpmk')->group(function () {
         Route::get('/mk/{mata_kuliah_id}', [CpmkController::class, 'index'])->name('cpmk.index');
@@ -54,14 +62,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{cpmk}', [CpmkController::class, 'destroy'])->name('cpmk.destroy');
     });
 
-    // Rute Matrix (Akses Universal untuk melihat relasi)
-    Route::prefix('matrix')->group(function () {
-        Route::get('/', [MatrixController::class, 'index'])->name('matrix.index');
-    });
+    // Matrix (Akses untuk melihat relasi CPL ke Mata Kuliah)
+    Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix.index');
 });
 
-// --- ZONA OTORISASI MUTLAK (HANYA KAPRODI) ---
+
+// ==============================================================
+// ZONA 3: OTORISASI MUTLAK (HANYA KAPRODI)
+// ==============================================================
 Route::middleware(['auth', 'role:Kaprodi'])->group(function () {
+    
     // Manajemen Dosen
     Route::get('/dosen', [DosenController::class, 'index'])->name('dosen.index');
     Route::get('/dosen/create', [DosenController::class, 'create'])->name('dosen.create');
@@ -85,7 +95,7 @@ Route::middleware(['auth', 'role:Kaprodi'])->group(function () {
     Route::patch('/iea/{iea}', [IeaController::class, 'update'])->name('iea.update');
     Route::delete('/iea/{iea}', [IeaController::class, 'destroy'])->name('iea.destroy');
 
-    // Sinkronisasi Matrix (Hanya Kaprodi yang boleh mengubah relasi CPL/PPM/IEA)
+    // Sinkronisasi Matrix (Hanya Kaprodi yang boleh mengubah relasi)
     Route::post('/matrix/bulk-sync', [MatrixController::class, 'syncCplBulk'])->name('matrix.sync.bulk');
     Route::post('/matrix/sync-cpl-iea', [MatrixController::class, 'syncCplIea'])->name('matrix.sync-cpl-iea');
     Route::post('/matrix/sync-ppm-iea', [MatrixController::class, 'syncPpmIea'])->name('matrix.sync-ppm-iea');

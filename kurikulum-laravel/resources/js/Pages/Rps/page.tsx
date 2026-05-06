@@ -50,7 +50,7 @@ export default function RpsIndex({ rps, mataKuliahs }: { rps: Rps[], mataKuliahs
         setData('mata_kuliah_id', mk_id);
         if (!mk_id) return;
         try {
-            const res = await axios.get(`/api/mata-kuliah/${mk_id}/rps-data`);
+            const res = await axios.get(`/mata-kuliah/${mk_id}/rps-data`);
             const fetchedCpmks = res.data.data.cpmks;
             setCpmks(fetchedCpmks);
             setData('penilaians', fetchedCpmks.map((c: CPMK) => ({
