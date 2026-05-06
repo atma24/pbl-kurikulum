@@ -12,8 +12,9 @@ use App\Http\Controllers\IndikatorKinerjaController;
 use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\CpmkController;
 use App\Http\Controllers\SignatureController;
-use App\Http\Controllers\RpsController;
+use App\Http\Controllers\DosenController;
 
+// --- ZONA PUBLIK ---
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -23,86 +24,67 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// --- ZONA AMAN (AUTENTIKASI UMUM) ---
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
 
-// --- ZONA AMAN (HANYA BISA DIAKSES JIKA SUDAH LOGIN) ---
-Route::middleware('auth')->group(function () {
-    // 1. Rute Profile (Bawaan Breeze)
+    // Profile & Signature (Akses Universal)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // 2. Rute Matrix Kurikulum
-    Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix.index');
-    
-    // Rute Bulk Save (Endpoint baru untuk menyimpan banyak checkbox sekaligus)
-    Route::post('/matrix/bulk-sync', [MatrixController::class, 'syncCplBulk'])->name('matrix.sync.bulk');
-    // Rute Indikator Kinerja
-    Route::resource('indikator-kinerja', IndikatorKinerjaController::class)->except(['create', 'show', 'edit']);
-// Grouping Matrix
-    Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix.index');
-    Route::post('/matrix/sync-cpl-iea', [MatrixController::class, 'syncCplIea']);
-    Route::post('/matrix/sync-ppm-iea', [MatrixController::class, 'syncPpmIea']);
-
-    // CPL Routes
-    Route::get('/cpl', [CplController::class, 'index'])->name('cpl.index');
-    Route::post('/cpl', [CplController::class, 'store'])->name('cpl.store');
-    Route::patch('/cpl/{cpl}', [CplController::class, 'update'])->name('cpl.update');
-    Route::delete('/cpl/{cpl}', [CplController::class, 'destroy'])->name('cpl.destroy');
-
-    // PPM Routes
-    Route::get('/ppm', [PpmController::class, 'index'])->name('ppm.index');
-    Route::post('/ppm', [PpmController::class, 'store'])->name('ppm.store');
-    Route::patch('/ppm/{ppm}', [PpmController::class, 'update'])->name('ppm.update');
-    Route::delete('/ppm/{ppm}', [PpmController::class, 'destroy'])->name('ppm.destroy');
-    // Rute Tanda Tangan Digital
     Route::get('/profile/signature', [SignatureController::class, 'edit'])->name('signature.edit');
-    // Wajib PUT karena Inertia mengirim _method: 'PUT' untuk file upload
     Route::put('/profile/signature', [SignatureController::class, 'update'])->name('signature.update');
-    // IEA Routes
-    Route::get('/iea', [IeaController::class, 'index'])->name('iea.index');
-    Route::post('/iea', [IeaController::class, 'store'])->name('iea.store');
-    Route::patch('/iea/{iea}', [IeaController::class, 'update'])->name('iea.update');
-    Route::delete('/iea/{iea}', [IeaController::class, 'destroy'])->name('iea.destroy');
 
+    // Rute Mata Kuliah & CPMK (Dosen butuh akses READ untuk memilih MK, dan akses WRITE untuk mengisi CPMK)
     Route::resource('mata-kuliah', MataKuliahController::class)->except(['create', 'show', 'edit']);
-    Route::get('/rps/{id}/pdf', [RpsController::class, 'printPdf'])->name('rps.pdf');
-    Route::resource('rps', RpsController::class)->except(['show']);
-
-    // 2. API Endpoint JSON (Untuk menarik matriks CPL & CPMK saat MK dipilih di Form RPS)
-    Route::get('/api/mata-kuliah/{id}/rps-data', [MataKuliahController::class, 'apiGetRpsData'])
-        ->name('api.mk.rps-data');
-    // --- GULUNGAN RUTE MATA KULIAH ---
-Route::prefix('mata-kuliah')->group(function () {
-        Route::get('/', [MataKuliahController::class, 'index'])->name('mata-kuliah.index');
-        Route::post('/', [MataKuliahController::class, 'store'])->name('mata-kuliah.store');
-        
-        // MANTRA BARU: Ubah "put" menjadi "patch"
-        Route::patch('/{mata_kuliah}', [MataKuliahController::class, 'update'])->name('mata-kuliah.update');
-        
-        Route::delete('/{mata_kuliah}', [MataKuliahController::class, 'destroy'])->name('mata-kuliah.destroy');
+    Route::prefix('mata-kuliah')->group(function () {
         Route::get('/{id}/rps-data', [MataKuliahController::class, 'apiGetRpsData'])->name('mata-kuliah.rps-data');
     });
 
-    // --- GULUNGAN RUTE CPMK ---
     Route::prefix('cpmk')->group(function () {
-        // Menampilkan CPMK berdasarkan ID Mata Kuliah
         Route::get('/mk/{mata_kuliah_id}', [CpmkController::class, 'index'])->name('cpmk.index');
         Route::post('/', [CpmkController::class, 'store'])->name('cpmk.store');
         Route::delete('/{cpmk}', [CpmkController::class, 'destroy'])->name('cpmk.destroy');
     });
 
-    // --- GULUNGAN RUTE MATRIX (PUSAKA UTAMA KURIKULUM) ---
+    // Rute Matrix (Akses Universal untuk melihat relasi)
     Route::prefix('matrix')->group(function () {
         Route::get('/', [MatrixController::class, 'index'])->name('matrix.index');
-        
-        // MANTRA SINKRONISASI PIVOT
-        Route::post('/sync-cpl-iea', [MatrixController::class, 'syncCplIea'])->name('matrix.sync-cpl-iea');
-        Route::post('/sync-ppm-iea', [MatrixController::class, 'syncPpmIea'])->name('matrix.sync-ppm-iea');
-        Route::post('/sync-mk-cpl', [MatrixController::class, 'syncMkCpl'])->name('matrix.sync-mk-cpl');
     });
+});
+
+// --- ZONA OTORISASI MUTLAK (HANYA KAPRODI) ---
+Route::middleware(['auth', 'role:Kaprodi'])->group(function () {
+    // Manajemen Dosen
+    Route::get('/dosen', [DosenController::class, 'index'])->name('dosen.index');
+    Route::get('/dosen/create', [DosenController::class, 'create'])->name('dosen.create');
+    Route::post('/dosen', [DosenController::class, 'store'])->name('dosen.store');
+
+    // Master Data OBE
+    Route::resource('indikator-kinerja', IndikatorKinerjaController::class)->except(['create', 'show', 'edit']);
+
+    Route::get('/cpl', [CplController::class, 'index'])->name('cpl.index');
+    Route::post('/cpl', [CplController::class, 'store'])->name('cpl.store');
+    Route::patch('/cpl/{cpl}', [CplController::class, 'update'])->name('cpl.update');
+    Route::delete('/cpl/{cpl}', [CplController::class, 'destroy'])->name('cpl.destroy');
+
+    Route::get('/ppm', [PpmController::class, 'index'])->name('ppm.index');
+    Route::post('/ppm', [PpmController::class, 'store'])->name('ppm.store');
+    Route::patch('/ppm/{ppm}', [PpmController::class, 'update'])->name('ppm.update');
+    Route::delete('/ppm/{ppm}', [PpmController::class, 'destroy'])->name('ppm.destroy');
+
+    Route::get('/iea', [IeaController::class, 'index'])->name('iea.index');
+    Route::post('/iea', [IeaController::class, 'store'])->name('iea.store');
+    Route::patch('/iea/{iea}', [IeaController::class, 'update'])->name('iea.update');
+    Route::delete('/iea/{iea}', [IeaController::class, 'destroy'])->name('iea.destroy');
+
+    // Sinkronisasi Matrix (Hanya Kaprodi yang boleh mengubah relasi CPL/PPM/IEA)
+    Route::post('/matrix/bulk-sync', [MatrixController::class, 'syncCplBulk'])->name('matrix.sync.bulk');
+    Route::post('/matrix/sync-cpl-iea', [MatrixController::class, 'syncCplIea'])->name('matrix.sync-cpl-iea');
+    Route::post('/matrix/sync-ppm-iea', [MatrixController::class, 'syncPpmIea'])->name('matrix.sync-ppm-iea');
+    Route::post('/matrix/sync-mk-cpl', [MatrixController::class, 'syncMkCpl'])->name('matrix.sync-mk-cpl');
 });
 
 require __DIR__.'/auth.php';

@@ -15,11 +15,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Panggil RoleSeeder yang berisi logika Spatie dan pembuatan akun Kaprodi
+        $this->call([
+            RoleSeeder::class,
         ]);
     }
 }

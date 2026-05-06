@@ -32,10 +32,15 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                // Kita injeksi roles dan permissions agar Frontend bisa baca
-                'user' => $request->user() ? array_merge($request->user()->toArray(), [
-                    'roles' => $request->user()->getRoleNames(), // Fitur bawaan Spatie
-                ]) : null,
+                'user' => $request->user(),
+                // Injeksi roles dan permissions secara paralel, bukan di dalam tabel user
+                'roles' => $request->user() ? $request->user()->getRoleNames() : [],
+                'permissions' => $request->user() ? $request->user()->getAllPermissions()->pluck('name') : [],
+            ],
+            // Opsional: Flash message untuk notifikasi sukses/error
+            'flash' => [
+                'message' => fn () => $request->session()->get('message'),
+                'error' => fn () => $request->session()->get('error'),
             ],
         ];
     }
