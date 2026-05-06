@@ -19,8 +19,8 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                                currentUrl.startsWith('/iea') || 
                                currentUrl.startsWith('/indikator-kinerja') ||
                                currentUrl.startsWith('/mata-kuliah') || 
-                               currentUrl.startsWith('/cpmk') ||
-                               currentUrl.startsWith('/signature');
+                               currentUrl.startsWith('/cpmk') || 
+                               currentUrl.startsWith('/rps');
 
     const [isMasterFolderOpen, setIsMasterFolderOpen] = useState(isMasterDataActive);
 
@@ -66,7 +66,26 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                         >
                             <span>Curriculum Map</span>
                         </Link>
+                                <Link
+                            href={route('matrix.index')}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/matrix')
+                                ? 'bg-polman-neutral text-polman-primary border-l-4 border-polman-primary'
+                                : 'text-gray-500 hover:bg-gray-50 hover:text-polman-secondary border-l-4 border-transparent'
+                                }`}
+                        >
+                            <span>Curriculum Map</span>
+                        </Link>
 
+                        {/* TAMBAHAN MENU RPS DI SINI */}
+                        <Link
+                            href={route('rps.index')}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/rps')
+                                ? 'bg-polman-neutral text-polman-primary border-l-4 border-polman-primary'
+                                : 'text-gray-500 hover:bg-gray-50 hover:text-polman-secondary border-l-4 border-transparent'
+                                }`}
+                        >
+                            <span>Rencana Pembelajaran (RPS)</span>
+                        </Link>
                         {/* --- MENU EKSKLUSIF KAPRODI --- */}
                         {isKaprodi && (
                             <Link
@@ -155,14 +174,6 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                                         </Link>
                                     </>
                                 )}
-
-                                {/* Tanda Tangan Digital: Dosen dan Kaprodi Bisa Lihat */}
-                                <Link 
-                                    href={route('signature.edit')} 
-                                    className="block w-full px-4 py-2 text-left text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out"
-                                >
-                                    Tanda Tangan Digital
-                                </Link>
                             </div>
                         </div>
                     </nav>

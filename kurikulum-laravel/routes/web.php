@@ -11,9 +11,8 @@ use App\Http\Controllers\MatrixController;
 use App\Http\Controllers\IndikatorKinerjaController;
 use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\CpmkController;
-use App\Http\Controllers\SignatureController;
 use App\Http\Controllers\DosenController;
-
+use App\Http\Controllers\RpsController;
 // --- ZONA PUBLIK ---
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -29,13 +28,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         return Inertia::render('Dashboard');
     })->name('dashboard');
+    // rps
+    Route::resource('rps', RpsController::class)->except(['show']);
 
+    // 2. Rute Print Preview PDF (Buka di browser / tab baru)
+    Route::get('/rps/{id}/pdf', [RpsController::class, 'printPdf'])->name('rps.pdf');
+
+    // 3. Rute Download PDF (Otomatis langsung mengunduh file)
+    Route::get('/rps/{id}/download', [RpsController::class, 'downloadPdf'])->name('rps.download');
     // Profile & Signature (Akses Universal)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::get('/profile/signature', [SignatureController::class, 'edit'])->name('signature.edit');
-    Route::put('/profile/signature', [SignatureController::class, 'update'])->name('signature.update');
 
     // Rute Mata Kuliah & CPMK (Dosen butuh akses READ untuk memilih MK, dan akses WRITE untuk mengisi CPMK)
     Route::resource('mata-kuliah', MataKuliahController::class)->except(['create', 'show', 'edit']);

@@ -141,19 +141,35 @@ public function index()
             'details.*.penilaian_bobot'      => 'numeric|min:0|max:100',
         ]);
     }
+// BUKA DI BROWSER (Preview)
     public function printPdf($id)
-        {
-            // PERHATIKAN: indikatorKinerjas pakai 's'
-            $rps = Rps::with([
-                'mataKuliah.cpmks.indikatorKinerjas.cpl', 
-                'dosen', 
-                'penilaians.cpmk', 
-                'details'
-            ])->findOrFail($id);
+    {
+        $rps = Rps::with([
+            'mataKuliah.cpmks.indikatorKinerjas.cpl', 
+            'dosen', 
+            'penilaians.cpmk', 
+            'details'
+        ])->findOrFail($id);
 
-            $pdf = Pdf::loadView('pdf.rps', compact('rps'))
-                    ->setPaper('a4', 'landscape');
+        $pdf = Pdf::loadView('pdf.rps', compact('rps'))->setPaper('a4', 'landscape');
 
-            return $pdf->stream('RPS_' . $rps->mataKuliah->kode_mk . '.pdf');
-        }
+        // Menggunakan stream() agar terbuka di tab baru
+        return $pdf->stream('RPS_' . $rps->mataKuliah->kode_mk . '.pdf');
+    }
+
+    // LANGSUNG DOWNLOAD KE LAPTOP
+    public function downloadPdf($id)
+    {
+        $rps = Rps::with([
+            'mataKuliah.cpmks.indikatorKinerjas.cpl', 
+            'dosen', 
+            'penilaians.cpmk', 
+            'details'
+        ])->findOrFail($id);
+
+        $pdf = Pdf::loadView('pdf.rps', compact('rps'))->setPaper('a4', 'landscape');
+
+        // Menggunakan download() agar memaksa browser mengunduh file
+        return $pdf->download('RPS_' . $rps->mataKuliah->kode_mk . '.pdf');
+    }
 }
