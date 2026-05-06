@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Head, useForm, router, Link } from '@inertiajs/react';
+import { Head, useForm, router, Link, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Dialog } from '@headlessui/react';
+
 
 interface MataKuliah {
     id: number;
@@ -18,6 +19,10 @@ interface MataKuliah {
 }
 
 export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuliah[] }) {
+    // 1. Injeksi Role dari Inertia Shared Props
+    const { roles } = usePage().props.auth as any;
+    const isKaprodi = roles?.includes('Kaprodi');
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
     const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -94,7 +99,12 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                     <h2 className="font-headline font-bold text-2xl text-gray-900">Mata Kuliah</h2>
                     <p className="text-gray-500 text-sm font-body mt-1">Kelola data pusaka mata kuliah prodi.</p>
                 </div>
-                <button onClick={openAddModal} className="bg-polman-primary hover:bg-polman-secondary text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-colors">+ Tambah Mata Kuliah</button>
+                {/* 2. Sembunyikan Tombol Tambah untuk Dosen */}
+                {isKaprodi && (
+                    <button onClick={openAddModal} className="bg-polman-primary hover:bg-polman-secondary text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-colors">
+                        + Tambah Mata Kuliah
+                    </button>
+                )}
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden font-body">
@@ -117,7 +127,6 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                                 <tr key={mk.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 font-bold text-polman-primary">{mk.kode_mk}</td>
                                     
-                                    {/* STEP D: Tampilan Prasyarat di Tabel */}
                                     <td className="px-6 py-4 font-medium text-gray-800">
                                         {mk.nama_mk}
                                         <div className="text-xs text-gray-500 mt-1">{mk.jenis} • {mk.cara_pembelajaran}</div>
@@ -137,11 +146,18 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-3">
+                                            {/* Tombol Kelola CPMK: Bisa dilihat Dosen dan Kaprodi */}
                                             <Link href={`/cpmk/mk/${mk.id}`} className="bg-polman-primary hover:bg-polman-secondary text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors">
                                                 Kelola CPMK
                                             </Link>
-                                            <button onClick={() => openEditModal(mk)} className="text-blue-600 hover:text-blue-800 font-bold px-2 text-sm transition-colors">Edit</button>
-                                            <button onClick={() => { if (confirm(`Hapus MK ${mk.kode_mk}?`)) router.delete(`/mata-kuliah/${mk.id}`); }} className="text-red-500 hover:text-red-700 font-bold px-2 text-sm transition-colors">Hapus</button>
+                                            
+                                            {/* 3. Sembunyikan Tombol Edit & Hapus untuk Dosen */}
+                                            {isKaprodi && (
+                                                <>
+                                                    <button onClick={() => openEditModal(mk)} className="text-blue-600 hover:text-blue-800 font-bold px-2 text-sm transition-colors">Edit</button>
+                                                    <button onClick={() => { if (confirm(`Hapus MK ${mk.kode_mk}?`)) router.delete(`/mata-kuliah/${mk.id}`); }} className="text-red-500 hover:text-red-700 font-bold px-2 text-sm transition-colors">Hapus</button>
+                                                </>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -151,6 +167,7 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                 </table>
             </div>
 
+            {/* Modal di bawah tidak perlu dilindungi isKaprodi karena tombol pemicunya sudah dilindungi */}
             <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} className="relative z-50">
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
                 <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -189,7 +206,6 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                                 </div>
                             </div>
 
-                            {/* STEP C: Ditambahkan ke Grid ini, diubah menjadi cols-3 */}
                             <div className="grid grid-cols-3 gap-4">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Sifat Pengambilan</label>
