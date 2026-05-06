@@ -16,14 +16,14 @@ class RoleSeeder extends Seeder
 
         // Ciptakan Role
         Role::create(['name' => 'Kaprodi']);
-        Role::create(['name' => 'Dosen']);
+        Role::create(['name' => 'Atmin']);
 
         // Ciptakan Akun Kaprodi (Super Admin)
         $kaprodi = User::create([
-            'name' => 'Admin Kaprodi TRIN',
+            'name' => 'Polisi TRIN',
             'email' => 'kaprodi@polman.edu',
             'nip' => '198001012005011001', // NIP Dummy
-            'password' => Hash::make('password'),
+            'password' => Hash::make('123456789'),
         ]);
 
         // Sematkan Role Kaprodi ke akun tersebut

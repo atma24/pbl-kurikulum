@@ -13,6 +13,7 @@ use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\CpmkController;
 use App\Http\Controllers\DosenController;
 use App\Http\Controllers\RpsController;
+
 // --- ZONA PUBLIK ---
 Route::get('/', function () {
     return Inertia::render('Welcome', [

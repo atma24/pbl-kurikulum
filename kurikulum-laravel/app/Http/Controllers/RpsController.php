@@ -11,7 +11,7 @@ use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
 class RpsController extends Controller
 {
-public function index()
+    public function index()
     {
         // UBAH BARIS INI: Tambahkan penilaians dan details
         $rps = Rps::with(['mataKuliah:id,kode_mk,nama_mk', 'dosen:id,name', 'penilaians', 'details'])->get();
