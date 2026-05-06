@@ -66,15 +66,6 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                         >
                             <span>Curriculum Map</span>
                         </Link>
-                                <Link
-                            href={route('matrix.index')}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/matrix')
-                                ? 'bg-polman-neutral text-polman-primary border-l-4 border-polman-primary'
-                                : 'text-gray-500 hover:bg-gray-50 hover:text-polman-secondary border-l-4 border-transparent'
-                                }`}
-                        >
-                            <span>Curriculum Map</span>
-                        </Link>
 
                         {/* TAMBAHAN MENU RPS DI SINI */}
                         <Link
