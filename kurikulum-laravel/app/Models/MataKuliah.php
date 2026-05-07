@@ -37,4 +37,11 @@ class MataKuliah extends Model
     {
         return $this->hasMany(Cpmk::class, 'mata_kuliah_id');
     }
+
+    // Relasi ke Dosen Pengampu (Many-to-Many via pivot)
+    public function dosenPengampus()
+    {
+        return $this->belongsToMany(DosenBiodata::class, 'dosen_biodata_mata_kuliah', 'mata_kuliah_id', 'dosen_biodata_id')
+                    ->withTimestamps();
+    }
 }

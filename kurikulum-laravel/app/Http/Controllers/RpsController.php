@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Rps;
 use App\Models\MataKuliah;
+use App\Models\DosenBiodata;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -13,14 +14,15 @@ class RpsController extends Controller
 {
     public function index()
     {
-        // UBAH BARIS INI: Tambahkan penilaians dan details
-        $rps = Rps::with(['mataKuliah:id,kode_mk,nama_mk', 'dosen:id,name', 'penilaians', 'details'])->get();
+        $rps = Rps::with(['mataKuliah:id,kode_mk,nama_mk', 'dosenBiodata', 'penilaians', 'details'])->get();
         
         $mataKuliahs = MataKuliah::select('id', 'kode_mk', 'nama_mk')->get();
+        $allDosen = DosenBiodata::orderBy('nama_lengkap')->get();
 
         return Inertia::render('Rps/page', [
             'rps' => $rps,
-            'mataKuliahs' => $mataKuliahs
+            'mataKuliahs' => $mataKuliahs,
+            'allDosen' => $allDosen,
         ]);
     }
 
@@ -31,7 +33,7 @@ class RpsController extends Controller
         DB::transaction(function () use ($validated, $request) {
             $rps = Rps::create([
                 'mata_kuliah_id'     => $validated['mata_kuliah_id'],
-                'dosen_id'           => $request->user()->id,
+                'dosen_biodata_id'   => $validated['dosen_biodata_id'],
                 'tahun_akademik'     => $validated['tahun_akademik'],
                 'tanggal_penyusunan' => $validated['tanggal_penyusunan'],
                 'pustaka_utama'      => $validated['pustaka_utama'],
@@ -41,7 +43,7 @@ class RpsController extends Controller
                 'tte_dosen'          => $request->file('tte_dosen')->store('rps_tte', 'public'),
                 'tte_kaprodi'        => $request->file('tte_kaprodi')->store('rps_tte', 'public'),
                 'tte_kajur'          => $request->file('tte_kajur')->store('rps_tte', 'public'),
-                'kode_dokumen'       => $validated['kode_dokumen'], // <--- Tambah baris ini
+                'kode_dokumen'       => $validated['kode_dokumen'],
             ]);
 
             $rps->penilaians()->createMany($validated['penilaians']);
@@ -60,12 +62,13 @@ class RpsController extends Controller
         DB::transaction(function () use ($validated, $request, $rps) {
             $data = [
                 'mata_kuliah_id'     => $validated['mata_kuliah_id'],
+                'dosen_biodata_id'   => $validated['dosen_biodata_id'],
                 'tahun_akademik'     => $validated['tahun_akademik'],
                 'tanggal_penyusunan' => $validated['tanggal_penyusunan'],
                 'pustaka_utama'      => $validated['pustaka_utama'],
                 'pustaka_pendukung'  => $validated['pustaka_pendukung'] ?? null,
                 'bahan_kajian_utama' => $validated['bahan_kajian_utama'],
-                'kode_dokumen'       => $validated['kode_dokumen'], // <--- Tambah baris ini
+                'kode_dokumen'       => $validated['kode_dokumen'],
             ];
 
             // Cek dan ganti masing-masing TTE jika ada file baru
@@ -111,6 +114,7 @@ class RpsController extends Controller
 
         return $request->validate([
             'mata_kuliah_id'     => 'required|exists:mata_kuliahs,id',
+            'dosen_biodata_id'   => 'required|exists:dosen_biodatas,id',
             'tahun_akademik'     => 'required|string|max:20',
             'tanggal_penyusunan' => 'required|date',
             'pustaka_utama'      => 'required|string',
@@ -130,7 +134,7 @@ class RpsController extends Controller
             'penilaians.*.uas'     => 'numeric|min:0|max:100',
 
             'details'                        => 'required|array',
-            'details.*.minggu_ke'            => 'required|string|max:10',
+            'details.*.pertemuan_ke'         => 'required|string|max:10',
             'details.*.kemampuan_akhir'      => 'required|string',
             'details.*.indikator'            => 'required|string',
             'details.*.bahan_kajian'         => 'required|string',
@@ -146,7 +150,7 @@ class RpsController extends Controller
     {
         $rps = Rps::with([
             'mataKuliah.cpmks.indikatorKinerjas.cpl', 
-            'dosen', 
+            'dosenBiodata', 
             'penilaians.cpmk', 
             'details',
             'mataKuliah.prasyarat',
@@ -163,7 +167,7 @@ class RpsController extends Controller
     {
         $rps = Rps::with([
             'mataKuliah.cpmks.indikatorKinerjas.cpl', 
-            'dosen', 
+            'dosenBiodata', 
             'penilaians.cpmk', 
             'details',
             'mataKuliah.prasyarat',

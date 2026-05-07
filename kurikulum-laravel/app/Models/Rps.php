@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Rps extends Model
 {
 protected $fillable = [
-    'mata_kuliah_id', 'dosen_id', 'tahun_akademik', 'kode_dokumen', // <--- Tambah di sini
+    'mata_kuliah_id', 'dosen_biodata_id', 'tahun_akademik', 'kode_dokumen',
     'tanggal_penyusunan', 'pustaka_utama', 'pustaka_pendukung', 
     'bahan_kajian_utama', 'tte_dosen', 'tte_kaprodi', 'tte_kajur'
 ];
@@ -17,9 +17,9 @@ protected $fillable = [
         return $this->belongsTo(MataKuliah::class);
     }
 
-    public function dosen()
+    public function dosenBiodata()
     {
-        return $this->belongsTo(User::class, 'dosen_id');
+        return $this->belongsTo(DosenBiodata::class, 'dosen_biodata_id');
     }
 
     public function penilaians()

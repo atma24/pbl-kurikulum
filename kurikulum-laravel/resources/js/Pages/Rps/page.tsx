@@ -6,13 +6,21 @@ import axios from 'axios';
 
 interface CPMK { id: number; kode_cpmk: string; deskripsi: string; }
 interface MataKuliah { id: number; kode_mk: string; nama_mk: string; }
+interface DosenBiodata {
+    id: number;
+    nama_lengkap: string;
+    gelar_depan: string | null;
+    gelar_belakang: string | null;
+    nip: string;
+}
 interface Rps {
     id: number;
     mata_kuliah_id: number;
+    dosen_biodata_id: number | null;
     tahun_akademik: string;
     kode_dokumen?: string;
     mata_kuliah: MataKuliah;
-    dosen: { name: string };
+    dosen_biodata?: DosenBiodata | null;
     tanggal_penyusunan: string;
     pustaka_utama: string;
     pustaka_pendukung: string;
@@ -21,19 +29,24 @@ interface Rps {
     details: any[];
 }
 
-export default function RpsIndex({ rps, mataKuliahs }: { rps: Rps[], mataKuliahs: MataKuliah[] }) {
+const dosenFullName = (d: DosenBiodata) =>
+    [d.gelar_depan, d.nama_lengkap, d.gelar_belakang].filter(Boolean).join(' ');
+
+export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], mataKuliahs: MataKuliah[], allDosen: DosenBiodata[] }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [cpmks, setCpmks] = useState<CPMK[]>([]);
+    const [dosenPengampuMk, setDosenPengampuMk] = useState<DosenBiodata[]>([]);
     
     // State khusus untuk Modal Delete yang Estetik
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const { data, setData, post, reset, processing, errors, clearErrors } = useForm({
         mata_kuliah_id: '',
+        dosen_biodata_id: '' as string | number,
         tahun_akademik: '',
-        kode_dokumen: '', // <--- Tambahan field kode dokumen
+        kode_dokumen: '',
         tanggal_penyusunan: new Date().toISOString().split('T')[0],
         pustaka_utama: '',
         pustaka_pendukung: '',
@@ -42,17 +55,20 @@ export default function RpsIndex({ rps, mataKuliahs }: { rps: Rps[], mataKuliahs
         tte_kaprodi: null as File | null,   
         tte_kajur: null as File | null,     
         penilaians: [] as any[],
-        details: [{ minggu_ke: '', kemampuan_akhir: '', indikator: '', bahan_kajian: '', metode_pembelajaran: '', estimasi_waktu: '', pengalaman_belajar: '', penilaian_komponen: '', penilaian_bobot: 0 }],
+        details: [{ pertemuan_ke: '', kemampuan_akhir: '', indikator: '', bahan_kajian: '', metode_pembelajaran: '', estimasi_waktu: '', pengalaman_belajar: '', penilaian_komponen: '', penilaian_bobot: 0 }],
         _method: 'POST'
     });
 
     const handleMkChange = async (mk_id: string) => {
         setData('mata_kuliah_id', mk_id);
+        setDosenPengampuMk([]);
         if (!mk_id) return;
         try {
             const res = await axios.get(`/mata-kuliah/${mk_id}/rps-data`);
             const fetchedCpmks = res.data.data.cpmks;
+            const fetchedDosen = res.data.data.dosen_pengampus || [];
             setCpmks(fetchedCpmks);
+            setDosenPengampuMk(fetchedDosen);
             setData('penilaians', fetchedCpmks.map((c: CPMK) => ({
                 cpmk_id: c.id, quiz: 0, tugas: 0, project: 0, uts: 0, uas: 0
             })));
@@ -66,6 +82,7 @@ export default function RpsIndex({ rps, mataKuliahs }: { rps: Rps[], mataKuliahs
         reset();
         clearErrors();
         setCpmks([]);
+        setDosenPengampuMk([]);
         setData('_method', 'POST');
         setIsModalOpen(true);
     };
@@ -77,11 +94,13 @@ export default function RpsIndex({ rps, mataKuliahs }: { rps: Rps[], mataKuliahs
         
         let loadedPenilaians = item.penilaians || [];
 
-        // Tarik struktur CPMK untuk render tabel matriks
+        // Tarik struktur CPMK dan dosen pengampu untuk render
         try {
-            const res = await axios.get(`/api/mata-kuliah/${item.mata_kuliah_id}/rps-data`);
+            const res = await axios.get(`/mata-kuliah/${item.mata_kuliah_id}/rps-data`);
             const fetchedCpmks = res.data.data.cpmks;
+            const fetchedDosen = res.data.data.dosen_pengampus || [];
             setCpmks(fetchedCpmks);
+            setDosenPengampuMk(fetchedDosen);
 
             // JARING PENGAMAN: Jika matriks kosong
             if (loadedPenilaians.length === 0) {
@@ -96,6 +115,7 @@ export default function RpsIndex({ rps, mataKuliahs }: { rps: Rps[], mataKuliahs
         // Timpa state form dengan data yang ada di database
         setData({
             mata_kuliah_id: item.mata_kuliah_id.toString(),
+            dosen_biodata_id: item.dosen_biodata_id || '',
             tahun_akademik: item.tahun_akademik,
             kode_dokumen: item.kode_dokumen || '',
             tanggal_penyusunan: item.tanggal_penyusunan,
@@ -108,14 +128,14 @@ export default function RpsIndex({ rps, mataKuliahs }: { rps: Rps[], mataKuliahs
             penilaians: loadedPenilaians,
             details: (item.details && item.details.length > 0) 
                      ? item.details 
-                     : [{ minggu_ke: '', kemampuan_akhir: '', indikator: '', bahan_kajian: '', metode_pembelajaran: '', estimasi_waktu: '', pengalaman_belajar: '', penilaian_komponen: '', penilaian_bobot: 0 }],
+                     : [{ pertemuan_ke: '', kemampuan_akhir: '', indikator: '', bahan_kajian: '', metode_pembelajaran: '', estimasi_waktu: '', pengalaman_belajar: '', penilaian_komponen: '', penilaian_bobot: 0 }],
             _method: 'PUT'
         });
 
         setIsModalOpen(true);
     };
 
-    const addMingguan = () => setData('details', [...data.details, { minggu_ke: '', kemampuan_akhir: '', indikator: '', bahan_kajian: '', metode_pembelajaran: '', estimasi_waktu: '', pengalaman_belajar: '', penilaian_komponen: '', penilaian_bobot: 0 }]);
+    const addMingguan = () => setData('details', [...data.details, { pertemuan_ke: '', kemampuan_akhir: '', indikator: '', bahan_kajian: '', metode_pembelajaran: '', estimasi_waktu: '', pengalaman_belajar: '', penilaian_komponen: '', penilaian_bobot: 0 }]);
     const removeMingguan = (index: number) => setData('details', data.details.filter((_, i) => i !== index));
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -178,7 +198,7 @@ export default function RpsIndex({ rps, mataKuliahs }: { rps: Rps[], mataKuliahs
                                         {item.tahun_akademik}
                                         <div className="text-xs text-gray-400 mt-1">{item.kode_dokumen}</div>
                                     </td>
-                                    <td className="px-6 py-4 font-medium text-gray-800">{item.dosen?.name}</td>
+                                    <td className="px-6 py-4 font-medium text-gray-800">{item.dosen_biodata ? dosenFullName(item.dosen_biodata) : '-'}</td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-3">
                                             {/* TOMBOL PRINT KE RUTE PDF */}
@@ -247,9 +267,28 @@ export default function RpsIndex({ rps, mataKuliahs }: { rps: Rps[], mataKuliahs
                                         <option value="RPS_TRIN">RPS_TRIN</option>
                                         <option value="RPS_TRO">RPS_TRO</option>
                                         <option value="RPS_TRMO">RPS_TRMO</option>
+                                        <option value="RPS_TRSA">RPS_TRSA</option>
                                     </select>
                                 </div>
                                 
+                                {/* DOSEN PENGAMPU */}
+                                <div className="col-span-3">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Dosen Pengampu</label>
+                                    {dosenPengampuMk.length > 0 ? (
+                                        <select className="w-full border-gray-300 rounded text-sm" value={data.dosen_biodata_id} onChange={e => setData('dosen_biodata_id', e.target.value ? Number(e.target.value) : '')} required>
+                                            <option value="">-- Pilih Dosen Pengampu --</option>
+                                            {dosenPengampuMk.map(d => (
+                                                <option key={d.id} value={d.id}>{dosenFullName(d)} (NIP: {d.nip})</option>
+                                            ))}
+                                        </select>
+                                    ) : data.mata_kuliah_id ? (
+                                        <p className="text-xs text-yellow-600 bg-yellow-50 border border-yellow-200 rounded-lg p-2">Belum ada dosen pengampu yang di-assign ke MK ini. Hubungi Kaprodi untuk menambahkan via halaman Kelola Dosen Pengampu.</p>
+                                    ) : (
+                                        <p className="text-xs text-gray-400 italic">Pilih Mata Kuliah terlebih dahulu.</p>
+                                    )}
+                                    {errors.dosen_biodata_id && <span className="text-red-500 text-xs">{errors.dosen_biodata_id}</span>}
+                                </div>
+
                                 {/* UPLOAD TTE (3 Kolom) */}
                                 <div className="col-span-3 mt-2">
                                     <label className="block text-sm font-bold text-gray-700 mb-2 border-b pb-1">Upload QR Code / Tanda Tangan Elektronik</label>
@@ -329,46 +368,89 @@ export default function RpsIndex({ rps, mataKuliahs }: { rps: Rps[], mataKuliahs
                                 </div>
                             )}
 
-                            {/* RENCANA MINGGUAN */}
+                            {/* RENCANA PEMBELAJARAN MINGGUAN */}
                             <div>
                                 <label className="block text-sm font-bold text-gray-700 mb-2 border-b pb-1">Rencana Pembelajaran Mingguan</label>
                                 {data.details.map((detail, idx) => (
                                     <div key={idx} className="border border-gray-200 p-3 rounded mb-3 bg-gray-50 relative">
-                                        <button type="button" onClick={() => removeMingguan(idx)} className="absolute top-2 right-3 text-red-500 text-xs font-bold hover:underline">Hapus Baris</button>
-                                        <div className="grid grid-cols-4 gap-3 mt-4">
-                                            <input type="text" placeholder="Mg Ke- (cth: 1)" className="border-gray-300 rounded text-sm" value={detail.minggu_ke} onChange={e => { const d = [...data.details]; d[idx].minggu_ke = e.target.value; setData('details', d); }} required />
-                                            <input type="text" placeholder="Estimasi Waktu" className="border-gray-300 rounded text-sm" value={detail.estimasi_waktu} onChange={e => { const d = [...data.details]; d[idx].estimasi_waktu = e.target.value; setData('details', d); }} required />
-                                            <input type="text" placeholder="Metode Pembelajaran" className="border-gray-300 rounded text-sm col-span-2" value={detail.metode_pembelajaran} onChange={e => { const d = [...data.details]; d[idx].metode_pembelajaran = e.target.value; setData('details', d); }} required />
-                                            
-                                            <textarea placeholder="Kemampuan Akhir" rows={2} className="border-gray-300 rounded text-sm col-span-2" value={detail.kemampuan_akhir} onChange={e => { const d = [...data.details]; d[idx].kemampuan_akhir = e.target.value; setData('details', d); }} required />
-                                            <textarea placeholder="Indikator" rows={2} className="border-gray-300 rounded text-sm col-span-2" value={detail.indikator} onChange={e => { const d = [...data.details]; d[idx].indikator = e.target.value; setData('details', d); }} required />
-                                            
-                                            <textarea placeholder="Bahan Kajian (Materi Spesifik)" rows={2} className="border-gray-300 rounded text-sm col-span-2" value={detail.bahan_kajian} onChange={e => { const d = [...data.details]; d[idx].bahan_kajian = e.target.value; setData('details', d); }} required />
-                                            <textarea placeholder="Pengalaman Belajar" rows={2} className="border-gray-300 rounded text-sm col-span-2" value={detail.pengalaman_belajar} onChange={e => { const d = [...data.details]; d[idx].pengalaman_belajar = e.target.value; setData('details', d); }} />
-                                            
-                                            <input type="text" placeholder="Komponen Penilaian" className="border-gray-300 rounded text-sm col-span-2" value={detail.penilaian_komponen} onChange={e => { const d = [...data.details]; d[idx].penilaian_komponen = e.target.value; setData('details', d); }} />
-                                            
-                                            {/* SUDAH SUPPORT KOMA DAN DESIMAL */}
-                                            <input 
-                                                type="text" 
-                                                placeholder="Bobot Penilaian (%)" 
-                                                className="border-gray-300 rounded text-sm col-span-2" 
-                                                value={detail.penilaian_bobot} 
-                                                onChange={e => { 
-                                                    const d = [...data.details]; 
-                                                    d[idx].penilaian_bobot = e.target.value as any; 
-                                                    setData('details', d); 
-                                                }}
-                                                onBlur={e => {
-                                                    const d = [...data.details];
-                                                    d[idx].penilaian_bobot = parseDecimal(e.target.value);
-                                                    setData('details', d);
-                                                }}
-                                            />
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className="text-xs font-bold text-gray-500">Pertemuan #{idx + 1}</span>
+                                            <button type="button" onClick={() => removeMingguan(idx)} className="text-red-500 text-xs font-bold hover:underline">Hapus Baris</button>
+                                        </div>
+                                        <div className="grid grid-cols-6 gap-3">
+                                            <div className="col-span-1">
+                                                <label className="block text-xs font-bold text-gray-600 mb-1">Pt Ke-</label>
+                                                <input type="text" placeholder="cth: 1" className="w-full border-gray-300 rounded text-sm" value={detail.pertemuan_ke} onChange={e => { const d = [...data.details]; d[idx].pertemuan_ke = e.target.value; setData('details', d); }} required />
+                                            </div>
+
+                                            <div className="col-span-5">
+                                                <label className="block text-xs font-bold text-gray-600 mb-1">Kemampuan Akhir Tiap Tahapan Belajar</label>
+                                                <textarea placeholder="Kemampuan akhir yang diharapkan" rows={2} className="w-full border-gray-300 rounded text-sm" value={detail.kemampuan_akhir} onChange={e => { const d = [...data.details]; d[idx].kemampuan_akhir = e.target.value; setData('details', d); }} required />
+                                            </div>
+
+                                            <div className="col-span-6 border border-gray-200 rounded p-3 bg-white">
+                                                <label className="block text-xs font-bold text-gray-600 mb-2">Penilaian</label>
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    <div>
+                                                        <label className="block text-xs text-gray-500 mb-1">Indikator</label>
+                                                        <textarea placeholder="Indikator penilaian" rows={2} className="w-full border-gray-300 rounded text-sm" value={detail.indikator} onChange={e => { const d = [...data.details]; d[idx].indikator = e.target.value; setData('details', d); }} required />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs text-gray-500 mb-1">Komponen</label>
+                                                        <textarea placeholder="Komponen penilaian" rows={2} className="w-full border-gray-300 rounded text-sm" value={detail.penilaian_komponen} onChange={e => { const d = [...data.details]; d[idx].penilaian_komponen = e.target.value; setData('details', d); }} />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs text-gray-500 mb-1">Bobot (%)</label>
+                                                        <input 
+                                                            type="text" 
+                                                            placeholder="cth: 10" 
+                                                            className="w-full border-gray-300 rounded text-sm" 
+                                                            value={detail.penilaian_bobot} 
+                                                            onChange={e => { 
+                                                                const d = [...data.details]; 
+                                                                d[idx].penilaian_bobot = e.target.value as any; 
+                                                                setData('details', d); 
+                                                            }}
+                                                            onBlur={e => {
+                                                                const d = [...data.details];
+                                                                d[idx].penilaian_bobot = parseDecimal(e.target.value);
+                                                                setData('details', d);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="col-span-3">
+                                                <label className="block text-xs font-bold text-gray-600 mb-1">Bahan Kajian (Materi Pembelajaran)</label>
+                                                <textarea placeholder="Materi pembelajaran spesifik" rows={2} className="w-full border-gray-300 rounded text-sm" value={detail.bahan_kajian} onChange={e => { const d = [...data.details]; d[idx].bahan_kajian = e.target.value; setData('details', d); }} required />
+                                            </div>
+
+                                            <div className="col-span-3">
+                                                <label className="block text-xs font-bold text-gray-600 mb-1">Modalitas, Bentuk, Strategi, dan Metode Pembelajaran</label>
+                                                <textarea 
+                                                    placeholder={"Modalitas:\nPembelajaran bauran (Blended Learning)\nBentuk:\nKuliah teori\nStrategi:\nPembelajaran ekspositori dan inkuiri\nMetode:\nCeramah, diskusi, case method\nMedia:\ne-book, video\nSumber belajar:"} 
+                                                    rows={6} 
+                                                    className="w-full border-gray-300 rounded text-sm" 
+                                                    value={detail.metode_pembelajaran} 
+                                                    onChange={e => { const d = [...data.details]; d[idx].metode_pembelajaran = e.target.value; setData('details', d); }} 
+                                                    required 
+                                                />
+                                            </div>
+
+                                            <div className="col-span-2">
+                                                <label className="block text-xs font-bold text-gray-600 mb-1">Estimasi Waktu</label>
+                                                <input type="text" placeholder="cth: 2x100 menit" className="w-full border-gray-300 rounded text-sm" value={detail.estimasi_waktu} onChange={e => { const d = [...data.details]; d[idx].estimasi_waktu = e.target.value; setData('details', d); }} required />
+                                            </div>
+
+                                            <div className="col-span-4">
+                                                <label className="block text-xs font-bold text-gray-600 mb-1">Pengalaman Belajar Mahasiswa</label>
+                                                <textarea placeholder="Pengalaman belajar yang diharapkan" rows={2} className="w-full border-gray-300 rounded text-sm" value={detail.pengalaman_belajar} onChange={e => { const d = [...data.details]; d[idx].pengalaman_belajar = e.target.value; setData('details', d); }} />
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
-                                <button type="button" onClick={addMingguan} className="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded font-bold">+ Tambah Minggu</button>
+                                <button type="button" onClick={addMingguan} className="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1.5 rounded font-bold">+ Tambah Pertemuan</button>
                             </div>
 
                             {/* AKSI TOMBOL */}

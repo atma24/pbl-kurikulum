@@ -38,10 +38,14 @@
             <td width="60%" class="text-center font-bold" style="vertical-align: middle;">
                 Politeknik Manufaktur Bandung<br>
                 Jurusan Teknik Otomasi Manufaktur dan Mekatronika<br>
-                Program Studi {{ 
-                    $rps->kode_dokumen == 'RPS_TRIN' ? 'Teknologi Rekayasa Informatika Industri' : 
-                    ($rps->kode_dokumen == 'RPS_TRO' ? 'Teknologi Rekayasa Otomasi' : 'Teknologi Rekayasa Mekatronika') 
-                }}
+                Program Studi @php
+                    $prodiMap = [
+                        'RPS_TRIN' => 'Teknologi Rekayasa Informatika Industri',
+                        'RPS_TRO' => 'Teknologi Rekayasa Otomasi',
+                        'RPS_TRMO' => 'Teknologi Rekayasa Mekatronika',
+                        'RPS_TRSA' => 'Teknologi Rekayasa Sistem Aerial Nirawak',
+                    ];
+                @endphp{{ $prodiMap[$rps->kode_dokumen] ?? $rps->kode_dokumen }}
             </td>
             <td width="20%" class="text-center font-bold" style="vertical-align: middle;">
                 {{ $rps->kode_dokumen }}_{{ $rps->mataKuliah->kode_mk }}
@@ -63,7 +67,7 @@
         </tr>
         <tr>
             <td class="font-bold">Dosen Pengampu</td>
-            <td>{{ $rps->dosen->name }}</td>
+            <td>{{ $rps->dosenBiodata ? trim(implode(' ', array_filter([$rps->dosenBiodata->gelar_depan, $rps->dosenBiodata->nama_lengkap, $rps->dosenBiodata->gelar_belakang]))) : '-' }}</td>
             <td class="font-bold">Tahun Akademik</td>
             <td>{{ $rps->tahun_akademik }}</td>
         </tr>
@@ -258,30 +262,32 @@
 
     <!-- DETAIL MINGGUAN -->
     <table class="table-nempel">
-        <tr><td colspan="6" class="font-bold uppercase bg-gray text-center">Rencana Pembelajaran Mingguan</td></tr>
+        <tr><td colspan="9" class="font-bold uppercase bg-gray text-center">Rencana Pembelajaran Mingguan</td></tr>
         <tr class="text-center font-bold bg-gray">
-            <td width="5%">Mg Ke</td>
-            <td width="20%">Kemampuan Akhir</td>
-            <td width="25%">Bahan Kajian</td>
-            <td width="15%">Metode & Waktu</td>
-            <td width="25%">Pengalaman & Indikator</td>
-            <td width="10%">Bobot (%)</td>
+            <td width="4%" rowspan="2" style="vertical-align: middle;">Pt Ke-</td>
+            <td width="15%" rowspan="2" style="vertical-align: middle;">Kemampuan Akhir Tiap Tahapan Belajar</td>
+            <td colspan="3" width="24%">Penilaian</td>
+            <td width="15%" rowspan="2" style="vertical-align: middle;">Bahan Kajian (Materi Pembelajaran)</td>
+            <td width="18%" rowspan="2" style="vertical-align: middle;">Modalitas, Bentuk, Strategi, dan Metode Pembelajaran</td>
+            <td width="9%" rowspan="2" style="vertical-align: middle;">Estimasi Waktu</td>
+            <td width="15%" rowspan="2" style="vertical-align: middle;">Pengalaman Belajar Mahasiswa</td>
+        </tr>
+        <tr class="text-center font-bold bg-gray">
+            <td width="10%">Indikator</td>
+            <td width="8%">Komponen</td>
+            <td width="6%">Bobot %</td>
         </tr>
         @foreach($rps->details as $dt)
         <tr>
-            <td class="text-center font-bold">{{ $dt->minggu_ke }}</td>
+            <td class="text-center font-bold">{{ $dt->pertemuan_ke }}</td>
             <td>{!! nl2br(e($dt->kemampuan_akhir)) !!}</td>
-            <td>{!! nl2br(e($dt->bahan_kajian)) !!}</td>
-            <td>
-                <b>Metode:</b><br>{{ $dt->metode_pembelajaran }}<br><br>
-                <b>Waktu:</b><br>{{ $dt->estimasi_waktu }}
-            </td>
-            <td>
-                <b>Pengalaman:</b><br>{{ $dt->pengalaman_belajar }}<br><br>
-                <b>Indikator:</b><br>{{ $dt->indikator }}<br><br>
-                <b>Komponen:</b> {{ $dt->penilaian_komponen }}
-            </td>
+            <td>{!! nl2br(e($dt->indikator)) !!}</td>
+            <td>{!! nl2br(e($dt->penilaian_komponen)) !!}</td>
             <td class="text-center font-bold">{{ floatval($dt->penilaian_bobot) }}</td>
+            <td>{!! nl2br(e($dt->bahan_kajian)) !!}</td>
+            <td>{!! nl2br(e($dt->metode_pembelajaran)) !!}</td>
+            <td>{!! nl2br(e($dt->estimasi_waktu)) !!}</td>
+            <td>{!! nl2br(e($dt->pengalaman_belajar)) !!}</td>
         </tr>
         @endforeach
     </table>

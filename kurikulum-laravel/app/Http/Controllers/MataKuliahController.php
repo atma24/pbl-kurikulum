@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MataKuliah;
+use App\Models\DosenBiodata;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -86,12 +87,54 @@ class MataKuliahController extends Controller
     {
         $mataKuliah = MataKuliah::with([
             'cpls.indikatorKinerjas', 
-            'cpmks.indikatorKinerjas'
+            'cpmks.indikatorKinerjas',
+            'dosenPengampus',
         ])->findOrFail($id);
 
         return response()->json([
             'status' => 'success',
             'data'   => $mataKuliah
         ]);
+    }
+
+    /**
+     * Halaman Kelola Dosen Pengampu per Mata Kuliah
+     */
+    public function dosenPengampu($id)
+    {
+        $mk = MataKuliah::with('dosenPengampus')->findOrFail($id);
+        $allDosen = DosenBiodata::orderBy('nama_lengkap')->get();
+
+        return Inertia::render('MataKuliah/DosenPengampu', [
+            'mataKuliah' => $mk,
+            'assignedDosen' => $mk->dosenPengampus,
+            'allDosen' => $allDosen,
+        ]);
+    }
+
+    /**
+     * Assign dosen pengampu ke Mata Kuliah
+     */
+    public function attachDosen(Request $request, $id)
+    {
+        $mk = MataKuliah::findOrFail($id);
+        $validated = $request->validate([
+            'dosen_biodata_id' => 'required|exists:dosen_biodatas,id',
+        ]);
+
+        $mk->dosenPengampus()->syncWithoutDetaching([$validated['dosen_biodata_id']]);
+
+        return redirect()->back()->with('success', 'Dosen pengampu berhasil ditambahkan.');
+    }
+
+    /**
+     * Hapus dosen pengampu dari Mata Kuliah
+     */
+    public function detachDosen($mkId, $dosenId)
+    {
+        $mk = MataKuliah::findOrFail($mkId);
+        $mk->dosenPengampus()->detach($dosenId);
+
+        return redirect()->back()->with('success', 'Dosen pengampu berhasil dihapus.');
     }
 }

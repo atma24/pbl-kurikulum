@@ -179,7 +179,16 @@ export default function DosenBiodataPage({ biodatas }: { biodatas: DosenBiodata[
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <Field label="No HP" value={data.no_hp} onChange={(value) => setData('no_hp', value)} />
-                                <Field label="Prodi" required value={data.prodi} error={errors.prodi} onChange={(value) => setData('prodi', value)} />
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-1">Prodi <span className="text-red-500">*</span></label>
+                                    <select className="w-full border-gray-300 rounded-lg text-sm" value={data.prodi} onChange={e => setData('prodi', e.target.value)} required>
+                                        <option value="Teknologi Rekayasa Informatika Industri">Teknologi Rekayasa Informatika Industri</option>
+                                        <option value="Teknologi Rekayasa Otomasi">Teknologi Rekayasa Otomasi</option>
+                                        <option value="Teknologi Rekayasa Mekatronika">Teknologi Rekayasa Mekatronika</option>
+                                        <option value="Teknologi Rekayasa Sistem Aerial Nirawak">Teknologi Rekayasa Sistem Aerial Nirawak</option>
+                                    </select>
+                                    {errors.prodi && <p className="text-red-500 text-xs mt-1">{errors.prodi}</p>}
+                                </div>
                                 <Field label="Jabatan Akademik" required value={data.jabatan_akademik} error={errors.jabatan_akademik} onChange={(value) => setData('jabatan_akademik', value)} />
                             </div>
                             <TextArea label="Bidang Keahlian" value={data.bidang_keahlian} onChange={(value) => setData('bidang_keahlian', value)} />

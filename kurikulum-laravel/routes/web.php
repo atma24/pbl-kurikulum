@@ -78,6 +78,11 @@ Route::middleware(['auth', 'role:Kaprodi'])->group(function () {
         ->parameters(['biodata-dosen' => 'dosenBiodata'])
         ->only(['index', 'store', 'update', 'destroy']);
 
+    // Kelola Dosen Pengampu per Mata Kuliah
+    Route::get('/mata-kuliah/{id}/dosen-pengampu', [MataKuliahController::class, 'dosenPengampu'])->name('mata-kuliah.dosen-pengampu');
+    Route::post('/mata-kuliah/{id}/dosen-pengampu', [MataKuliahController::class, 'attachDosen'])->name('mata-kuliah.attach-dosen');
+    Route::delete('/mata-kuliah/{mkId}/dosen-pengampu/{dosenId}', [MataKuliahController::class, 'detachDosen'])->name('mata-kuliah.detach-dosen');
+
     // Manajemen Dosen
     Route::get('/dosen', [DosenController::class, 'index'])->name('dosen.index');
     Route::get('/dosen/create', [DosenController::class, 'create'])->name('dosen.create');

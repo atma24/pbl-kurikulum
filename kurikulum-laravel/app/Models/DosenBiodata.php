@@ -28,4 +28,22 @@ class DosenBiodata extends Model
     {
         return $this->hasOne(User::class);
     }
+
+    public function mataKuliahs()
+    {
+        return $this->belongsToMany(MataKuliah::class, 'dosen_biodata_mata_kuliah', 'dosen_biodata_id', 'mata_kuliah_id')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Helper: Nama lengkap dengan gelar
+     */
+    public function getNamaLengkapGelarAttribute(): string
+    {
+        return trim(implode(' ', array_filter([
+            $this->gelar_depan,
+            $this->nama_lengkap,
+            $this->gelar_belakang,
+        ])));
+    }
 }

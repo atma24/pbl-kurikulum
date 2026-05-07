@@ -39,22 +39,12 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
         prasyarat_id: '' as string | number | null,
     });
 
-    const generateNextKodeMk = () => {
-        if (!mataKuliahs || mataKuliahs.length === 0) return 'MK-01';
-        const existingNumbers = mataKuliahs.map(mk => {
-            const match = mk.kode_mk.match(/MK-(\d+)/);
-            return match ? parseInt(match[1], 10) : 0;
-        });
-        const maxNumber = Math.max(...existingNumbers, 0);
-        return `MK-${(maxNumber + 1).toString().padStart(2, '0')}`;
-    };
-
     const openAddModal = () => {
         setModalMode('add');
         reset(); 
         clearErrors();
         setData({
-            kode_mk: generateNextKodeMk(),
+            kode_mk: '',
             nama_mk: '',
             sks: '',
             jenis: 'Teori',
@@ -151,6 +141,13 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                                                 Kelola CPMK
                                             </Link>
                                             
+                                            {/* Tombol Kelola Dosen Pengampu: Hanya Kaprodi */}
+                                            {isKaprodi && (
+                                                <Link href={`/mata-kuliah/${mk.id}/dosen-pengampu`} className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors">
+                                                    Kelola Dosen
+                                                </Link>
+                                            )}
+                                            
                                             {/* 3. Sembunyikan Tombol Edit & Hapus untuk Dosen */}
                                             {isKaprodi && (
                                                 <>
@@ -178,7 +175,8 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Kode MK <span className="text-red-500">*</span></label>
-                                    <input type="text" className="w-full border-gray-200 bg-gray-100 text-gray-500 rounded-lg text-sm cursor-not-allowed font-bold" value={data.kode_mk} readOnly />
+                                    <input type="text" placeholder="Cth: MK-01, TRO-101" className="w-full border-gray-300 rounded-lg focus:ring-polman-primary text-sm" value={data.kode_mk} onChange={e => setData('kode_mk', e.target.value)} required />
+                                    {errors.kode_mk && <p className="text-red-500 text-xs mt-1">{errors.kode_mk}</p>}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-1">Nama Mata Kuliah <span className="text-red-500">*</span></label>
