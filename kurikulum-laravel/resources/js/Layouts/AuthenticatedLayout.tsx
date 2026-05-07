@@ -79,18 +79,30 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                         </Link>
                         {/* --- MENU EKSKLUSIF KAPRODI --- */}
                         {isKaprodi && (
-                            <Link
-                                href={route('dosen.index')}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/dosen')
-                                    ? 'bg-polman-neutral text-polman-primary border-l-4 border-polman-primary'
-                                    : 'text-gray-500 hover:bg-gray-50 hover:text-polman-secondary border-l-4 border-transparent'
-                                    }`}
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                </svg>
-                                <span>Manajemen Dosen</span>
-                            </Link>
+                            <>
+                                <Link
+                                    href={route('biodata-dosen.index')}
+                                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/biodata-dosen')
+                                        ? 'bg-polman-neutral text-polman-primary border-l-4 border-polman-primary'
+                                        : 'text-gray-500 hover:bg-gray-50 hover:text-polman-secondary border-l-4 border-transparent'
+                                        }`}
+                                >
+                                    <span>Biodata Dosen</span>
+                                </Link>
+
+                                <Link
+                                    href={route('dosen.index')}
+                                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/dosen')
+                                        ? 'bg-polman-neutral text-polman-primary border-l-4 border-polman-primary'
+                                        : 'text-gray-500 hover:bg-gray-50 hover:text-polman-secondary border-l-4 border-transparent'
+                                        }`}
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                    <span>Akun Dosen</span>
+                                </Link>
+                            </>
                         )}
 
                         {/* --- FOLDER MASTER DATA --- */}   

@@ -11,6 +11,7 @@ use App\Http\Controllers\MatrixController;
 use App\Http\Controllers\IndikatorKinerjaController;
 use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\CpmkController;
+use App\Http\Controllers\DosenBiodataController;
 use App\Http\Controllers\DosenController;
 use App\Http\Controllers\RpsController;
 
@@ -72,6 +73,11 @@ Route::middleware(['auth', 'role:Kaprodi|Dosen'])->group(function () {
 // ==============================================================
 Route::middleware(['auth', 'role:Kaprodi'])->group(function () {
     
+    // Biodata Dosen
+    Route::resource('biodata-dosen', DosenBiodataController::class)
+        ->parameters(['biodata-dosen' => 'dosenBiodata'])
+        ->only(['index', 'store', 'update', 'destroy']);
+
     // Manajemen Dosen
     Route::get('/dosen', [DosenController::class, 'index'])->name('dosen.index');
     Route::get('/dosen/create', [DosenController::class, 'create'])->name('dosen.create');

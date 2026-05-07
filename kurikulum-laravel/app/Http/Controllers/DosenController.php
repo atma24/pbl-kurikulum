@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DosenBiodata;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class DosenController extends Controller
@@ -12,7 +14,9 @@ class DosenController extends Controller
     public function index()
     {
         // Mengambil semua user yang memiliki role 'Dosen'
-        $dosens = User::role('Dosen')->get();
+        $dosens = User::role('Dosen')
+            ->with('dosenBiodata:id,nama_lengkap,gelar_depan,gelar_belakang,nip,nidn,prodi,jabatan_akademik')
+            ->get();
         
         return Inertia::render('Dosen/Index', [
             'dosens' => $dosens
@@ -21,24 +25,45 @@ class DosenController extends Controller
 
     public function create()
     {
-        return Inertia::render('Dosen/Create');
+        $biodatas = DosenBiodata::whereDoesntHave('user')
+            ->orderBy('nama_lengkap')
+            ->get([
+                'id',
+                'nama_lengkap',
+                'gelar_depan',
+                'gelar_belakang',
+                'nip',
+                'email',
+            ]);
+
+        return Inertia::render('Dosen/Create', [
+            'biodatas' => $biodatas,
+        ]);
     }
 
     public function store(Request $request)
     {
-        // Validasi ketat (NIP dan Email tidak boleh duplikat)
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'dosen_biodata_id' => [
+                'required',
+                'exists:dosen_biodatas,id',
+                Rule::unique('users', 'dosen_biodata_id'),
+            ],
             'email' => 'required|string|email|max:255|unique:users',
-            'nip' => 'required|string|max:50|unique:users',
             'password' => 'required|string|min:8', // Tambahkan '|confirmed' jika ingin input 2 kali
         ]);
 
-        // Eksekusi insert data
+        $biodata = DosenBiodata::findOrFail($validated['dosen_biodata_id']);
+
         $user = User::create([
-            'name' => $validated['name'],
+            'dosen_biodata_id' => $biodata->id,
+            'name' => trim(implode(' ', array_filter([
+                $biodata->gelar_depan,
+                $biodata->nama_lengkap,
+                $biodata->gelar_belakang,
+            ]))),
             'email' => $validated['email'],
-            'nip' => $validated['nip'],
+            'nip' => $biodata->nip,
             'password' => Hash::make($validated['password']),
         ]);
 
