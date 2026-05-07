@@ -7,8 +7,10 @@ import { FormEventHandler } from 'react';
 
 export default function UpdateProfileInformation({
     className = '',
+    onSuccess,
 }: {
     className?: string;
+    onSuccess?: () => void;
 }) {
     // 1. Tarik user dan roles dari shared props (HandleInertiaRequests)
     const { user, roles } = usePage().props.auth as any;
@@ -21,7 +23,9 @@ export default function UpdateProfileInformation({
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        patch(route('profile.update'));
+        patch(route('profile.update'), {
+            onSuccess,
+        });
     };
 
     return (

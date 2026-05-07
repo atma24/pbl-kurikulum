@@ -8,8 +8,10 @@ import { FormEventHandler, useRef } from 'react';
 
 export default function UpdatePasswordForm({
     className = '',
+    onSuccess,
 }: {
     className?: string;
+    onSuccess?: () => void;
 }) {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
@@ -33,7 +35,10 @@ export default function UpdatePasswordForm({
 
         put(route('password.update'), {
             preserveScroll: true,
-            onSuccess: () => reset(),
+            onSuccess: () => {
+                reset();
+                onSuccess?.();
+            },
             onError: (errors) => {
                 if (errors.password) {
                     reset('password', 'password_confirmation');
