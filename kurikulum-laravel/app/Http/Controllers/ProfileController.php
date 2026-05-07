@@ -3,10 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Models\Cpl;
-use App\Models\MataKuliah;
-use App\Models\Ppm;
-use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,14 +20,7 @@ class ProfileController extends Controller
     {
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status'          => session('status'),
-            // Stats: total per entitas, dosen hanya role 'Dosen' (konsisten dengan DosenController)
-            'stats' => [
-                'total_mata_kuliah' => MataKuliah::count(),
-                'total_cpl'         => Cpl::count(),
-                'total_ppm'         => Ppm::count(),
-                'total_dosen'       => User::role('Dosen')->count(),
-            ],
+            'status' => session('status'),
         ]);
     }
 
