@@ -213,7 +213,7 @@ export default function Edit({
                     {/* ── Profile Card ────────────────────────────────────── */}
                     <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                         {/* Teal banner with subtle dot pattern */}
-                        <div className="h-28 bg-gradient-to-br from-teal-500 via-teal-700 to-teal-900 relative overflow-hidden">
+                        <div className="h-20 bg-gradient-to-br from-teal-500 via-teal-700 to-teal-900 relative overflow-hidden">
                             <div
                                 className="absolute inset-0 opacity-[0.08]"
                                 style={{
@@ -226,7 +226,7 @@ export default function Edit({
 
                         <div className="px-6 pb-6">
                             {/* Avatar — overlaps banner */}
-                            <div className="-mt-10 mb-5">
+                            <div className="-mt-0 mb-10">
                                 <img
                                     src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name ?? 'User')}&background=0D8E8E&color=fff&size=120`}
                                     alt="Avatar"
