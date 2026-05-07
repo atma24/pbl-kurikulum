@@ -1,6 +1,7 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import Modal from '@/Components/Modal';
 import { PageProps } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
 
@@ -179,7 +180,7 @@ export default function Edit({
                     onClose={() => setShowProfileModal(false)}
                 />
                 <div className="px-6 py-5">
-                    <UpdateProfileInformationForm onSuccess={() => setShowProfileModal(false)} />
+                    <UpdateProfileInformationForm />
                 </div>
             </Modal>
 
@@ -191,7 +192,7 @@ export default function Edit({
                     onClose={() => setShowPasswordModal(false)}
                 />
                 <div className="px-6 py-5">
-                    <UpdatePasswordForm onSuccess={() => setShowPasswordModal(false)} />
+                    <UpdatePasswordForm />
                 </div>
             </Modal>
 
