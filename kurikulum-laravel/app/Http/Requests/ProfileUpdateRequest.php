@@ -19,6 +19,7 @@ class ProfileUpdateRequest extends FormRequest
         return [
             // Hanya Nama yang diizinkan untuk diubah oleh Dosen/Kaprodi
             'name' => ['required', 'string', 'max:255'],
+            'nip' => ['required', 'string', 'max:20', 'unique:users,nip,'.$this->user()->id],
         ];
     }
 }
