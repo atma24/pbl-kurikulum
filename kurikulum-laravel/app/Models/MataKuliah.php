@@ -38,6 +38,12 @@ class MataKuliah extends Model
         return $this->hasMany(Cpmk::class, 'mata_kuliah_id');
     }
 
+    // Relasi ke RPS
+    public function rps()
+    {
+        return $this->hasMany(Rps::class);
+    }
+
     // Relasi ke Dosen Pengampu (Many-to-Many via pivot)
     public function dosenPengampus()
     {
