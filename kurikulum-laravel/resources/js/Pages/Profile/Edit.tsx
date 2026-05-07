@@ -180,7 +180,7 @@ export default function Edit({
                     onClose={() => setShowProfileModal(false)}
                 />
                 <div className="px-6 py-5">
-                    <UpdateProfileInformationForm />
+                    <UpdateProfileInformationForm onSuccess={() => setShowProfileModal(false)} />
                 </div>
             </Modal>
 
@@ -192,7 +192,7 @@ export default function Edit({
                     onClose={() => setShowPasswordModal(false)}
                 />
                 <div className="px-6 py-5">
-                    <UpdatePasswordForm />
+                    <UpdatePasswordForm onSuccess={() => setShowPasswordModal(false)} />
                 </div>
             </Modal>
 
