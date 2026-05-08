@@ -28,6 +28,14 @@
     </style>
 </head>
 <body>
+    @php
+        $prodiMap = [
+            'RPS_TRIN' => 'Teknologi Rekayasa Informatika Industri',
+            'RPS_TRO' => 'Teknologi Rekayasa Otomasi',
+            'RPS_TRMO' => 'Teknologi Rekayasa Mekatronika',
+            'RPS_TRSA' => 'Teknologi Rekayasa Sistem Aerial Nirawak',
+        ];
+    @endphp
 
     <!-- KOP SURAT -->
     <table>
@@ -38,14 +46,7 @@
             <td width="60%" class="text-center font-bold" style="vertical-align: middle;">
                 Politeknik Manufaktur Bandung<br>
                 Jurusan Teknik Otomasi Manufaktur dan Mekatronika<br>
-                Program Studi @php
-                    $prodiMap = [
-                        'RPS_TRIN' => 'Teknologi Rekayasa Informatika Industri',
-                        'RPS_TRO' => 'Teknologi Rekayasa Otomasi',
-                        'RPS_TRMO' => 'Teknologi Rekayasa Mekatronika',
-                        'RPS_TRSA' => 'Teknologi Rekayasa Sistem Aerial Nirawak',
-                    ];
-                @endphp{{ $prodiMap[$rps->kode_dokumen] ?? $rps->kode_dokumen }}
+                Program Studi {{ $prodiMap[$rps->kode_dokumen] ?? $rps->kode_dokumen }}
             </td>
             <td width="20%" class="text-center font-bold" style="vertical-align: middle;">
                 {{ $rps->kode_dokumen }}_{{ $rps->mataKuliah->kode_mk }}

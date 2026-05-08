@@ -32,6 +32,75 @@ interface Rps {
 const dosenFullName = (d: DosenBiodata) =>
     [d.gelar_depan, d.nama_lengkap, d.gelar_belakang].filter(Boolean).join(' ');
 
+const pembelajaranLabels = {
+    modalitas: 'Modalitas',
+    bentuk: 'Bentuk',
+    strategi: 'Strategi',
+    metode: 'Metode',
+    media: 'Media',
+    sumber_belajar: 'Sumber belajar',
+};
+
+const parsePembelajaran = (text: string = '') => {
+    const result = {
+        modalitas: '',
+        bentuk: '',
+        strategi: '',
+        metode: '',
+        media: '',
+        sumber_belajar: '',
+    };
+
+    const labelToKey = Object.fromEntries(
+        Object.entries(pembelajaranLabels).map(([key, label]) => [label.toLowerCase(), key])
+    ) as Record<string, keyof typeof result>;
+
+    const hasKnownFormat = Object.values(pembelajaranLabels).some(label => text.includes(`${label}:`));
+
+    if (!hasKnownFormat) {
+        result.modalitas = text;
+        return result;
+    }
+
+    let currentKey: keyof typeof result | null = null;
+
+    text.split(/\r?\n/).forEach(line => {
+        const labelMatch = line.trim().match(/^(Modalitas|Bentuk|Strategi|Metode|Media|Sumber belajar):\s*(.*)$/i);
+
+        if (labelMatch) {
+            currentKey = labelToKey[labelMatch[1].toLowerCase()];
+            const inlineValue = labelMatch[2]?.trim();
+            if (currentKey && inlineValue) {
+                result[currentKey] = inlineValue;
+            }
+            return;
+        }
+
+        if (currentKey) {
+            result[currentKey] = result[currentKey]
+                ? `${result[currentKey]}\n${line}`
+                : line;
+        }
+    });
+
+    Object.keys(result).forEach(key => {
+        result[key as keyof typeof result] = result[key as keyof typeof result].trim();
+    });
+
+    return result;
+};
+
+const buildPembelajaran = (values: ReturnType<typeof parsePembelajaran>) => {
+    return [
+        `${pembelajaranLabels.modalitas}:\n${values.modalitas}`,
+        `${pembelajaranLabels.bentuk}:\n${values.bentuk}`,
+        `${pembelajaranLabels.strategi}:\n${values.strategi}`,
+        `${pembelajaranLabels.metode}:\n${values.metode}`,
+        `${pembelajaranLabels.media}:\n${values.media}`,
+        `${pembelajaranLabels.sumber_belajar}:\n${values.sumber_belajar}`,
+    ].join('\n');
+};
+
 export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], mataKuliahs: MataKuliah[], allDosen: DosenBiodata[] }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
@@ -158,6 +227,14 @@ export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], m
 
     // Fungsi bantu untuk handle input angka yang pakai koma (,)
     const parseDecimal = (val: string) => parseFloat(val.replace(',', '.')) || 0;
+
+    const updatePembelajaranField = (idx: number, field: keyof ReturnType<typeof parsePembelajaran>, value: string) => {
+        const d = [...data.details];
+        const parsed = parsePembelajaran(d[idx].metode_pembelajaran || '');
+        parsed[field] = value;
+        d[idx].metode_pembelajaran = buildPembelajaran(parsed);
+        setData('details', d);
+    };
 
     return (
         <AuthenticatedLayout>
@@ -427,15 +504,33 @@ export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], m
                                             </div>
 
                                             <div className="col-span-3">
-                                                <label className="block text-xs font-bold text-gray-600 mb-1">Modalitas, Bentuk, Strategi, dan Metode Pembelajaran</label>
-                                                <textarea 
-                                                    placeholder={"Modalitas:\nPembelajaran bauran (Blended Learning)\nBentuk:\nKuliah teori\nStrategi:\nPembelajaran ekspositori dan inkuiri\nMetode:\nCeramah, diskusi, case method\nMedia:\ne-book, video\nSumber belajar:"} 
-                                                    rows={6} 
-                                                    className="w-full border-gray-300 rounded text-sm" 
-                                                    value={detail.metode_pembelajaran} 
-                                                    onChange={e => { const d = [...data.details]; d[idx].metode_pembelajaran = e.target.value; setData('details', d); }} 
-                                                    required 
-                                                />
+                                                <label className="block text-xs font-bold text-gray-600 mb-2">Modalitas, Bentuk, Strategi, dan Metode Pembelajaran</label>
+                                                <div className="grid grid-cols-1 gap-2 border border-gray-200 rounded p-3 bg-white">
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-gray-500 mb-1">Modalitas</label>
+                                                        <input type="text" placeholder="Pembelajaran bauran (Blended Learning)" className="w-full border-gray-300 rounded text-sm" value={parsePembelajaran(detail.metode_pembelajaran).modalitas} onChange={e => updatePembelajaranField(idx, 'modalitas', e.target.value)} required />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-gray-500 mb-1">Bentuk</label>
+                                                        <input type="text" placeholder="Kuliah teori" className="w-full border-gray-300 rounded text-sm" value={parsePembelajaran(detail.metode_pembelajaran).bentuk} onChange={e => updatePembelajaranField(idx, 'bentuk', e.target.value)} />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-gray-500 mb-1">Strategi</label>
+                                                        <textarea rows={2} placeholder="Pembelajaran ekspositori dan inkuiri" className="w-full border-gray-300 rounded text-sm" value={parsePembelajaran(detail.metode_pembelajaran).strategi} onChange={e => updatePembelajaranField(idx, 'strategi', e.target.value)} />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-gray-500 mb-1">Metode</label>
+                                                        <input type="text" placeholder="Ceramah, diskusi, case method" className="w-full border-gray-300 rounded text-sm" value={parsePembelajaran(detail.metode_pembelajaran).metode} onChange={e => updatePembelajaranField(idx, 'metode', e.target.value)} />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-gray-500 mb-1">Media</label>
+                                                        <input type="text" placeholder="e-book, video" className="w-full border-gray-300 rounded text-sm" value={parsePembelajaran(detail.metode_pembelajaran).media} onChange={e => updatePembelajaranField(idx, 'media', e.target.value)} />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-gray-500 mb-1">Sumber belajar</label>
+                                                        <textarea rows={2} placeholder="Sumber belajar" className="w-full border-gray-300 rounded text-sm" value={parsePembelajaran(detail.metode_pembelajaran).sumber_belajar} onChange={e => updatePembelajaranField(idx, 'sumber_belajar', e.target.value)} />
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             <div className="col-span-2">
