@@ -48,43 +48,54 @@ interface DashboardProps {
 
 // ─── Sub-Components ───────────────────────────────────────────────────────────
 
+function MaterialIcon({ name, className = 'text-xl' }: { name: string; className?: string }) {
+    return <span className={`material-symbols-outlined ${className}`}>{name}</span>;
+}
+
 function StatCard({ label, value, suffix, color = 'primary' }: {
     label: string; value: number | string; suffix?: string;
     color?: 'primary' | 'secondary' | 'teal' | 'amber';
 }) {
     const bgMap = {
-        primary: 'bg-polman-primary',
-        secondary: 'bg-polman-secondary',
-        teal: 'bg-teal-600',
+        primary: 'bg-primary',
+        secondary: 'bg-[#2dce89]',
+        teal: 'bg-secondary',
         amber: 'bg-amber-500',
     };
+    const iconMap = {
+        primary: 'school',
+        secondary: 'rocket_launch',
+        teal: 'analytics',
+        amber: 'warning',
+    };
     return (
-        <div className={`relative overflow-hidden rounded-2xl h-36 p-6 flex flex-col justify-between shadow-lg ${bgMap[color]}`}>
-            <p className="text-white/70 text-[10px] font-black uppercase tracking-widest">{label}</p>
+        <div className={`relative overflow-hidden rounded-[2rem] h-44 p-7 flex flex-col justify-between shadow-xl ${bgMap[color]}`}>
+            <p className={`${color === 'primary' ? 'text-aqua-200' : 'text-white/70'} text-[10px] font-black uppercase tracking-widest relative z-10`}>{label}</p>
             <div className="flex items-baseline gap-2">
-                <h2 className="text-5xl font-black italic tracking-tighter text-white">{value}</h2>
+                <h2 className="text-6xl font-black italic tracking-tighter text-white relative z-10">{value}</h2>
                 {suffix && <span className="text-white/60 text-sm font-bold">{suffix}</span>}
             </div>
+            <MaterialIcon name={iconMap[color]} className="absolute -right-3 -bottom-3 text-white/10 text-[120px]" />
         </div>
     );
 }
 
 function CoverageCard({ label, value }: { label: string; value: number }) {
     return (
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between h-36">
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{label}</span>
+        <div className="relative overflow-hidden rounded-[2rem] h-44 p-7 flex flex-col justify-between bg-white border-2 border-primary-container">
+            <span className="text-secondary text-[10px] font-black uppercase tracking-widest">{label}</span>
             <div>
                 <div className="flex items-baseline gap-1">
-                    <span className="font-headline text-4xl font-bold text-gray-900">{value}</span>
-                    <span className="text-sm text-gray-500 font-bold">%</span>
+                    <span className="font-headline text-5xl font-black italic text-primary">{value}</span>
+                    <span className="text-sm text-outline font-bold">%</span>
                 </div>
-                <div className="h-1.5 w-full bg-gray-100 rounded-full mt-3">
+                <div className="h-2.5 w-full bg-surface-container-highest rounded-full mt-4 overflow-hidden">
                     <div
-                        className="h-1.5 rounded-full transition-all duration-500"
+                        className="h-full rounded-full transition-all duration-500"
                         style={{
                             width: `${value}%`,
                             background: value >= 80
-                                ? 'linear-gradient(90deg, #008B8B, #2dce89)'
+                                ? 'linear-gradient(90deg, #7fffd4, #008080)'
                                 : value >= 50
                                     ? 'linear-gradient(90deg, #f59e0b, #eab308)'
                                     : 'linear-gradient(90deg, #ef4444, #f97316)',
@@ -103,12 +114,13 @@ function ShortcutGrid({ shortcuts }: { shortcuts: Shortcut[] }) {
                 <Link
                     key={s.href}
                     href={s.href}
-                    className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:border-polman-primary hover:shadow-md transition-all group"
+                    className="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-outline-variant/20 hover:border-primary-container hover:-translate-y-0.5 transition-all group"
                 >
-                    <p className="text-sm font-bold text-gray-900 group-hover:text-polman-primary transition-colors">{s.label}</p>
-                    {s.description && (
-                        <p className="text-[11px] text-gray-400 mt-1 leading-snug">{s.description}</p>
-                    )}
+                    <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-primary mb-4">
+                        <MaterialIcon name="chevron_right" className="text-lg" />
+                    </div>
+                    <p className="text-sm font-black text-on-surface group-hover:text-primary transition-colors">{s.label}</p>
+                    {s.description && <p className="text-[11px] text-slate-400 mt-1 leading-snug">{s.description}</p>}
                 </Link>
             ))}
         </div>
@@ -117,12 +129,12 @@ function ShortcutGrid({ shortcuts }: { shortcuts: Shortcut[] }) {
 
 function RpsStatusBadge({ status }: { status: string }) {
     const map: Record<string, string> = {
-        'Lengkap': 'bg-green-50 text-green-700 border-green-200',
+        'Lengkap': 'bg-primary-container text-primary border-primary-container',
         'Perlu Dilengkapi': 'bg-amber-50 text-amber-700 border-amber-200',
-        'Belum Ada': 'bg-gray-50 text-gray-500 border-gray-200',
+        'Belum Ada': 'bg-surface-container-low text-outline border-outline-variant/30',
     };
     return (
-        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${map[status] ?? map['Belum Ada']}`}>
+        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${map[status] ?? map['Belum Ada']}`}>
             {status}
         </span>
     );
@@ -145,11 +157,11 @@ function KaprodiDashboard({ stats, coverage, items, shortcuts }: {
     );
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 max-w-[1400px] mx-auto">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-black text-gray-900 tracking-tight font-headline">
-                    Dashboard <span className="text-polman-primary">Kaprodi</span>
+                <h1 className="text-3xl font-black text-primary tracking-tighter italic uppercase font-headline">
+                    Dashboard <span className="text-[#2dce89]">Kaprodi</span>
                 </h1>
                 <p className="text-gray-400 text-xs font-bold mt-1 uppercase tracking-widest">
                     Selamat datang, {user?.name}
@@ -179,19 +191,17 @@ function KaprodiDashboard({ stats, coverage, items, shortcuts }: {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-                    <h2 className="font-headline font-bold text-gray-900">Ringkasan Mata Kuliah</h2>
+            <div className="bg-white rounded-[2rem] shadow-sm border border-outline-variant/20 overflow-hidden">
+                <div className="flex items-center justify-between px-7 py-5 border-b border-outline-variant/10">
+                    <h2 className="font-headline font-black text-on-surface">Ringkasan Mata Kuliah</h2>
                     <div className="relative">
-                        <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
+                        <MaterialIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-outline text-base" />
                         <input
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Cari mata kuliah..."
-                            className="pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-xs font-medium text-gray-700 bg-gray-50 focus:outline-none focus:border-polman-primary w-56"
+                            className="pl-9 pr-4 py-2.5 rounded-xl border border-outline-variant/30 text-xs font-medium text-on-surface bg-surface-container-low focus:outline-none focus:border-primary w-56"
                         />
                     </div>
                 </div>
@@ -199,47 +209,47 @@ function KaprodiDashboard({ stats, coverage, items, shortcuts }: {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
-                            <tr className="border-b border-gray-100">
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Kode</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Nama Mata Kuliah</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">SKS</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Smt</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">CPL</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">CPMK</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Dosen</th>
-                                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">RPS</th>
+                            <tr className="border-b border-outline-variant/10">
+                                <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline">Kode</th>
+                                <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline">Nama Mata Kuliah</th>
+                                <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline text-center">SKS</th>
+                                <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline text-center">Smt</th>
+                                <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline text-center">CPL</th>
+                                <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline text-center">CPMK</th>
+                                <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline text-center">Dosen</th>
+                                <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline text-center">RPS</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50">
+                        <tbody className="divide-y divide-outline-variant/10">
                             {filtered.length > 0 ? filtered.map((mk) => (
-                                <tr key={mk.id} className="hover:bg-gray-50/50 transition-colors">
-                                    <td className="px-6 py-4 text-sm font-mono font-bold text-polman-primary">{mk.kode_mk}</td>
-                                    <td className="px-6 py-4">
-                                        <p className="text-sm font-bold text-gray-900">{mk.nama_mk}</p>
+                                <tr key={mk.id} className="hover:bg-surface-container-lowest transition-colors">
+                                    <td className="px-7 py-5 text-sm font-mono font-bold text-primary">{mk.kode_mk}</td>
+                                    <td className="px-7 py-5">
+                                        <p className="text-sm font-bold text-on-surface">{mk.nama_mk}</p>
                                         {mk.dosen_pengampus.length > 0 && (
                                             <p className="text-[11px] text-gray-400 mt-0.5">
                                                 {mk.dosen_pengampus.map((d) => d.nama).join(', ')}
                                             </p>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4 text-sm font-bold text-gray-700 text-center">{mk.sks}</td>
-                                    <td className="px-6 py-4 text-sm font-medium text-gray-500 text-center">{mk.semester}</td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-black ${mk.cpls_count > 0 ? 'bg-polman-primary/10 text-polman-primary' : 'bg-gray-100 text-gray-400'}`}>
+                                    <td className="px-7 py-5 text-sm font-bold text-on-surface-variant text-center">{mk.sks}</td>
+                                    <td className="px-7 py-5 text-sm font-medium text-outline text-center">{mk.semester}</td>
+                                    <td className="px-7 py-5 text-center">
+                                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-black ${mk.cpls_count > 0 ? 'bg-primary-container text-primary' : 'bg-surface-container-low text-outline'}`}>
                                             {mk.cpls_count}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-black ${mk.cpmks_count > 0 ? 'bg-teal-50 text-teal-700' : 'bg-gray-100 text-gray-400'}`}>
+                                    <td className="px-7 py-5 text-center">
+                                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-black ${mk.cpmks_count > 0 ? 'bg-teal-50 text-primary' : 'bg-surface-container-low text-outline'}`}>
                                             {mk.cpmks_count}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-black ${mk.dosen_pengampus_count > 0 ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-400'}`}>
+                                    <td className="px-7 py-5 text-center">
+                                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-black ${mk.dosen_pengampus_count > 0 ? 'bg-blue-50 text-blue-700' : 'bg-surface-container-low text-outline'}`}>
                                             {mk.dosen_pengampus_count}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 text-center">
+                                    <td className="px-7 py-5 text-center">
                                         <RpsStatusBadge status={mk.rps_count > 0 ? 'Lengkap' : 'Belum Ada'} />
                                     </td>
                                 </tr>
@@ -275,11 +285,11 @@ function DosenDashboard({ stats, items, shortcuts, warning }: {
     );
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 max-w-[1400px] mx-auto">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-black text-gray-900 tracking-tight font-headline">
-                    Dashboard <span className="text-polman-primary">Dosen</span>
+                <h1 className="text-3xl font-black text-primary tracking-tighter italic uppercase font-headline">
+                    Dashboard <span className="text-[#2dce89]">Dosen</span>
                 </h1>
                 <p className="text-gray-400 text-xs font-bold mt-1 uppercase tracking-widest">
                     Selamat datang, {user?.name}
@@ -288,10 +298,8 @@ function DosenDashboard({ stats, items, shortcuts, warning }: {
 
             {/* Warning */}
             {warning && (
-                <div className="flex items-start gap-3 px-5 py-4 bg-amber-50 border border-amber-200 rounded-xl">
-                    <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
+                <div className="flex items-start gap-3 px-5 py-4 bg-amber-50 border border-amber-200 rounded-2xl">
+                    <MaterialIcon name="warning" className="text-amber-500 flex-shrink-0 mt-0.5 text-xl" />
                     <div>
                         <p className="text-sm font-bold text-amber-800">Perhatian</p>
                         <p className="text-sm text-amber-700 mt-0.5">{warning}</p>
@@ -319,19 +327,17 @@ function DosenDashboard({ stats, items, shortcuts, warning }: {
 
             {/* Table */}
             {!warning && (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-                        <h2 className="font-headline font-bold text-gray-900">Mata Kuliah Yang Diampu</h2>
+                <div className="bg-white rounded-[2rem] shadow-sm border border-outline-variant/20 overflow-hidden">
+                    <div className="flex items-center justify-between px-7 py-5 border-b border-outline-variant/10">
+                        <h2 className="font-headline font-black text-on-surface">Mata Kuliah Yang Diampu</h2>
                         <div className="relative">
-                            <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
+                            <MaterialIcon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-outline text-base" />
                             <input
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Cari mata kuliah..."
-                                className="pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-xs font-medium text-gray-700 bg-gray-50 focus:outline-none focus:border-polman-primary w-56"
+                                className="pl-9 pr-4 py-2.5 rounded-xl border border-outline-variant/30 text-xs font-medium text-on-surface bg-surface-container-low focus:outline-none focus:border-primary w-56"
                             />
                         </div>
                     </div>
@@ -339,34 +345,34 @@ function DosenDashboard({ stats, items, shortcuts, warning }: {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
-                                <tr className="border-b border-gray-100">
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Kode</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400">Nama Mata Kuliah</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">SKS</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Smt</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">CPL</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">CPMK</th>
-                                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-gray-400 text-center">Status RPS</th>
+                                <tr className="border-b border-outline-variant/10">
+                                    <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline">Kode</th>
+                                    <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline">Nama Mata Kuliah</th>
+                                    <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline text-center">SKS</th>
+                                    <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline text-center">Smt</th>
+                                    <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline text-center">CPL</th>
+                                    <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline text-center">CPMK</th>
+                                    <th className="px-7 py-5 text-[10px] font-black uppercase tracking-widest text-outline text-center">Status RPS</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
+                            <tbody className="divide-y divide-outline-variant/10">
                                 {filtered.length > 0 ? filtered.map((mk) => (
-                                    <tr key={mk.id} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-4 text-sm font-mono font-bold text-polman-primary">{mk.kode_mk}</td>
-                                        <td className="px-6 py-4 text-sm font-bold text-gray-900">{mk.nama_mk}</td>
-                                        <td className="px-6 py-4 text-sm font-bold text-gray-700 text-center">{mk.sks}</td>
-                                        <td className="px-6 py-4 text-sm font-medium text-gray-500 text-center">{mk.semester}</td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-black ${mk.cpls_count > 0 ? 'bg-polman-primary/10 text-polman-primary' : 'bg-gray-100 text-gray-400'}`}>
+                                    <tr key={mk.id} className="hover:bg-surface-container-lowest transition-colors">
+                                        <td className="px-7 py-5 text-sm font-mono font-bold text-primary">{mk.kode_mk}</td>
+                                        <td className="px-7 py-5 text-sm font-bold text-on-surface">{mk.nama_mk}</td>
+                                        <td className="px-7 py-5 text-sm font-bold text-on-surface-variant text-center">{mk.sks}</td>
+                                        <td className="px-7 py-5 text-sm font-medium text-outline text-center">{mk.semester}</td>
+                                        <td className="px-7 py-5 text-center">
+                                            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-black ${mk.cpls_count > 0 ? 'bg-primary-container text-primary' : 'bg-surface-container-low text-outline'}`}>
                                                 {mk.cpls_count}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-black ${mk.cpmks_count > 0 ? 'bg-teal-50 text-teal-700' : 'bg-gray-100 text-gray-400'}`}>
+                                        <td className="px-7 py-5 text-center">
+                                            <span className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-black ${mk.cpmks_count > 0 ? 'bg-teal-50 text-primary' : 'bg-surface-container-low text-outline'}`}>
                                                 {mk.cpmks_count}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-center">
+                                        <td className="px-7 py-5 text-center">
                                             <RpsStatusBadge status={mk.rps_status} />
                                         </td>
                                     </tr>
@@ -391,14 +397,14 @@ function DosenDashboard({ stats, items, shortcuts, warning }: {
 function DefaultDashboard() {
     const { user } = usePage().props.auth as any;
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-[1400px] mx-auto">
             <div>
-                <h1 className="text-3xl font-black text-gray-900 tracking-tight font-headline">Dashboard</h1>
+                <h1 className="text-3xl font-black text-primary tracking-tighter italic uppercase font-headline">Dashboard</h1>
                 <p className="text-gray-400 text-xs font-bold mt-1 uppercase tracking-widest">
                     Selamat datang, {user?.name}
                 </p>
             </div>
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
+            <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-outline-variant/20 text-center">
                 <p className="text-gray-500 text-sm">
                     Dashboard untuk role Anda sedang dalam pengembangan.
                 </p>

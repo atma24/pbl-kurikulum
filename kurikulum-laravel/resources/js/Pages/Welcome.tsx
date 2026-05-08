@@ -8,261 +8,356 @@ interface Props {
     phpVersion: string;
 }
 
+const features = [
+    ['hub', 'Curriculum Mapping', 'Visualisasi relasi CPL, CPMK, mata kuliah, dan indikator kurikulum dalam satu alur yang mudah dipantau.', 'Kaprodi'],
+    ['description', 'RPS Terintegrasi', 'Pengelolaan rencana pembelajaran semester dengan status kelengkapan yang jelas untuk setiap mata kuliah.', 'Dosen'],
+    ['analytics', 'OBE Monitoring', 'Pantau coverage kurikulum, pemetaan outcome, dan kesiapan dokumen akademik secara ringkas.', 'Akademik'],
+    ['database', 'Master Data', 'Kelola CPL, PPM, IEA, mata kuliah, indikator kinerja, serta data pendukung kurikulum.', 'Kaprodi'],
+    ['school', 'Dosen Pengampu', 'Lihat penugasan dosen pada mata kuliah dan dokumen pembelajaran yang perlu dilengkapi.', 'Dosen'],
+    ['verified', 'Audit Ready', 'Tampilan data dan status dirancang untuk membantu kebutuhan monitoring dan evaluasi kurikulum.', 'Mutu'],
+];
+
+const steps = [
+    ['01', 'database', 'Input Master Data', 'Kaprodi menyiapkan struktur kurikulum, outcome, mata kuliah, dan indikator kinerja.', 'Kaprodi'],
+    ['02', 'hub', 'Pemetaan Kurikulum', 'Relasi CPL, CPMK, IEA, PPM, dan mata kuliah dipetakan dalam curriculum map.', 'Akademik'],
+    ['03', 'description', 'Penyusunan RPS', 'Dosen melengkapi dokumen pembelajaran sesuai mata kuliah yang diampu.', 'Dosen'],
+    ['04', 'monitoring', 'Monitoring Coverage', 'Status kelengkapan dan coverage kurikulum dipantau melalui dashboard.', 'Semua Role'],
+];
+
+const roles = [
+    ['admin_panel_settings', 'Kaprodi', 'Pengelola Kurikulum', 'Mengelola master data, memantau coverage OBE, meninjau dokumen RPS, dan memastikan kesiapan data akademik.', ['Master Data', 'Coverage', 'RPS', 'Monitoring'], true],
+    ['school', 'Dosen', 'Pengampu Mata Kuliah', 'Melengkapi RPS, meninjau CPMK terkait, dan memantau mata kuliah yang menjadi tanggung jawabnya.', ['RPS', 'CPMK', 'Mata Kuliah', 'Dokumen'], false],
+    ['hub', 'Tim Kurikulum', 'Reviewer Akademik', 'Membaca relasi kurikulum dan membantu validasi pemetaan outcome pembelajaran.', ['CPL', 'PPM', 'IEA', 'Matrix'], false],
+    ['workspace_premium', 'Mutu Akademik', 'Evaluasi Program', 'Menggunakan data dashboard untuk kebutuhan evaluasi, audit, dan pengembangan kurikulum.', ['Evaluasi', 'Audit', 'Rekap', 'Status'], false],
+];
+
+function Icon({ name, className = 'text-xl' }: { name: string; className?: string }) {
+    return <span className={`material-symbols-outlined ${className}`}>{name}</span>;
+}
+
 export default function Welcome({ canLogin, canRegister }: Props) {
     return (
-        <div className="min-h-screen bg-[#F8FAFC] font-body text-gray-900 selection:bg-polman-primary selection:text-white pb-12">
-            <Head title="Welcome to TRIN Portal" />
+        <div className="min-h-screen bg-white font-body text-aqua-900 antialiased">
+            <Head title="TRIN Curriculum Portal" />
 
-            {/* --- NAVBAR --- */}
-            <nav className="fixed top-0 left-0 w-full bg-white/90 backdrop-blur-md z-50 border-b border-gray-100 transition-all">
-                <div className="max-w-7xl mx-auto px-6 lg:px-8 h-20 flex items-center justify-between">
-                    {/* Logo */}
-                    <div className="flex items-center gap-2">
-                        <span className="font-headline font-bold text-xl tracking-wide text-polman-primary">TRIN Portal</span>
+            <nav className="fixed top-0 w-full z-50 bg-white/85 backdrop-blur-xl border-b border-aqua-200/30">
+                <div className="max-w-7xl mx-auto px-6 h-[68px] flex items-center justify-between">
+                    <a href="#" className="flex items-center gap-3 group">
+                        <div className="h-12 w-12 rounded-xl bg-aqua-800 flex items-center justify-center shadow-sm group-hover:bg-aqua-700 transition-colors overflow-hidden">
+                            <img src="/images/polman-logo.png" alt="POLMAN" className="h-9 w-9 object-contain" />
+                        </div>
+                        <div className="leading-tight">
+                            <span className="font-black text-aqua-800 text-base tracking-tight font-headline">TRIN Portal</span>
+                            <span className="block text-[10px] text-aqua-600 font-semibold tracking-widest uppercase">POLMAN Bandung</span>
+                        </div>
+                    </a>
+
+                    <div className="hidden md:flex items-center gap-8">
+                        <a href="#fitur" className="nav-link text-sm font-semibold text-aqua-700/70 hover:text-aqua-800 transition-colors">Fitur</a>
+                        <a href="#alur" className="nav-link text-sm font-semibold text-aqua-700/70 hover:text-aqua-800 transition-colors">Alur</a>
+                        <a href="#role" className="nav-link text-sm font-semibold text-aqua-700/70 hover:text-aqua-800 transition-colors">Pengguna</a>
                     </div>
 
-                    {/* Center Links (Hidden on Mobile) */}
-                    <div className="hidden md:flex gap-8 text-sm font-semibold text-gray-600">
-                        <a href="#" className="hover:text-polman-primary transition-colors border-b-2 border-transparent hover:border-polman-primary pb-1">Curriculum</a>
-                        <a href="#" className="hover:text-polman-primary transition-colors">OBE Framework</a>
-                        <a href="#" className="hover:text-polman-primary transition-colors">IABEE Compliance</a>
-                        <a href="#" className="hover:text-polman-primary transition-colors">Partnerships</a>
-                    </div>
-
-                    {/* Auth Buttons */}
-                    <div className="flex items-center gap-4">
-                        {canLogin ? (
+                    <div className="flex items-center gap-3">
+                        {canLogin && (
                             <>
-                                <Link 
-                                    href={route('login')} 
-                                    className="text-sm font-bold text-polman-primary hover:text-polman-secondary transition-colors"
-                                >
-                                    Portal Login
-                                </Link>
                                 {canRegister && (
-                                    <Link 
-                                        href={route('register')} 
-                                        className="bg-polman-primary hover:bg-polman-secondary text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm"
-                                    >
-                                        Register
+                                    <Link href={route('register')} className="hidden sm:inline-flex items-center gap-1.5 text-aqua-700 font-bold text-sm px-4 py-2 rounded-xl hover:bg-aqua-100/60 transition-colors">
+                                        Daftar
                                     </Link>
                                 )}
+                                <Link href={route('login')} className="inline-flex items-center gap-2 bg-aqua-200 text-aqua-800 px-5 py-2.5 rounded-xl font-black text-sm hover:bg-aqua-300 transition-colors shadow-sm shadow-aqua-300/40 active:scale-95 border border-aqua-300/50">
+                                    <Icon name="login" className="text-base" />
+                                    Masuk
+                                </Link>
                             </>
-                        ) : null}
+                        )}
                     </div>
                 </div>
             </nav>
 
-            {/* --- HERO SECTION --- */}
-            <section className="relative pt-40 pb-20 px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
-                {/* Background Decoration (Abstract Graphic representation) */}
-                <div className="absolute right-0 top-20 opacity-5 pointer-events-none w-1/2 h-full flex justify-end">
-                    <svg viewBox="0 0 200 200" className="w-[600px] h-[600px]" fill="currentColor">
-                        <path d="M100 0v200M0 100h200" stroke="currentColor" strokeWidth="2"/>
-                        <circle cx="100" cy="100" r="80" stroke="currentColor" strokeWidth="2" fill="none"/>
-                        <rect x="60" y="60" width="80" height="80" stroke="currentColor" strokeWidth="2" fill="none"/>
-                    </svg>
-                </div>
+            <section id="hero" className="relative pt-28 pb-16 lg:pt-36 lg:pb-24 overflow-hidden min-h-[92vh] flex items-center">
+                <div className="blob w-[60%] h-[70%] bg-aqua-200/35 -top-[10%] -right-[5%]" />
+                <div className="blob w-[45%] h-[55%] bg-aqua-300/15 top-[30%] -left-[10%]" />
+                <div className="blob w-[35%] h-[40%] bg-aqua-200/15 bottom-0 right-[20%]" />
+                <div className="absolute inset-0 dot-grid opacity-[0.04] pointer-events-none" />
 
-                <div className="relative z-10 max-w-3xl">
-                    <span className="inline-block bg-polman-primary/10 text-polman-primary px-4 py-1.5 rounded-full text-xs font-bold mb-8 tracking-widest uppercase border border-polman-primary/20">
-                        ✨ IABEE Accredited Program
-                    </span>
-                    <h1 className="text-5xl md:text-7xl font-headline font-extrabold text-gray-900 leading-[1.1] mb-6">
-                        Engineering the <br/>
-                        <span className="text-polman-primary italic">Future</span> of Education
-                    </h1>
-                    <p className="text-lg md:text-xl text-gray-600 mb-10 leading-relaxed max-w-2xl font-medium">
-                        Advanced OBE Management for Industrial Engineering Excellence. A digital blueprint for navigating the complex curriculum of POLMAN Bandung's TRIN program.
-                    </p>
-                    <div className="flex flex-wrap items-center gap-4">
-                        <button className="bg-polman-primary hover:bg-polman-secondary text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg shadow-polman-primary/30 transform hover:-translate-y-1">
-                            Explore Curriculum
-                        </button>
-                        <button className="bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 px-8 py-4 rounded-xl font-bold transition-all shadow-sm">
-                            Learn About IABEE
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            {/* --- BENTO GRID FEATURES --- */}
-            <section className="px-6 lg:px-8 max-w-7xl mx-auto mb-20">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Feature 1: OBE */}
-                    <div className="md:col-span-2 bg-white rounded-3xl p-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col justify-center">
-                        <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6">
-                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                <div className="relative max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center w-full">
+                    <div className="space-y-9">
+                        <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-aqua-200/20 border border-aqua-200/60">
+                            <span className="pulse-dot w-2 h-2 rounded-full bg-aqua-600 shrink-0" />
+                            <span className="text-aqua-700 font-bold text-[11px] tracking-[0.25em] uppercase font-mono">
+                                Sistem Aktif - TRIN POLMAN Bandung
+                            </span>
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-4">Outcome-Based Education (OBE)</h3>
-                        <p className="text-gray-600 leading-relaxed">
-                            Our curriculum is architected around measurable outcomes. Every module is a building block designed to ensure students achieve specific professional competencies required by the modern industry.
+
+                        <div className="space-y-1">
+                            <h1 className="text-6xl lg:text-7xl font-black text-aqua-900 leading-[0.88] tracking-tighter font-headline">
+                                Kelola Kurikulum
+                            </h1>
+                            <h1 className="text-6xl lg:text-7xl font-black leading-[0.88] tracking-tighter gradient-text font-headline">
+                                Lebih Cerdas.
+                            </h1>
+                        </div>
+
+                        <p className="text-aqua-800/60 text-xl max-w-md leading-relaxed font-medium italic border-l-4 border-aqua-300 pl-5">
+                            Portal manajemen kurikulum OBE untuk pemetaan CPL, CPMK, RPS, dan monitoring dokumen akademik Program TRIN.
                         </p>
-                    </div>
 
-                    {/* Feature 2: IABEE */}
-                    <div className="bg-polman-secondary rounded-3xl p-10 text-white shadow-xl shadow-polman-secondary/20 flex flex-col justify-center">
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-6 backdrop-blur-sm">
-                            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <div className="flex items-center gap-7 pt-1 overflow-x-auto pb-2">
+                            {[
+                                ['2', 'Role'],
+                                ['5+', 'Master Data'],
+                                ['100%', 'OBE Ready'],
+                                ['1', 'Portal'],
+                            ].map(([value, label], index) => (
+                                <React.Fragment key={label}>
+                                    {index > 0 && <div className="w-px h-8 bg-aqua-200/60 flex-shrink-0" />}
+                                    <div className="text-center flex-shrink-0">
+                                        <p className="text-3xl font-black text-aqua-600">{value}</p>
+                                        <p className="text-[10px] text-aqua-700/50 font-bold uppercase tracking-widest mt-0.5">{label}</p>
+                                    </div>
+                                </React.Fragment>
+                            ))}
                         </div>
-                        <h3 className="text-2xl font-bold mb-4">IABEE International Standards</h3>
-                        <p className="text-white/80 leading-relaxed text-sm">
-                            Aligning with global engineering education standards to provide graduates with international recognition and mobility.
-                        </p>
+
+                        <div className="flex flex-wrap gap-3 pt-1">
+                            <Link href={route('login')} className="inline-flex items-center gap-2 bg-aqua-200 text-aqua-900 px-9 py-4 rounded-2xl font-black text-sm shadow-2xl shadow-aqua-300/50 hover:bg-aqua-300 hover:scale-[1.02] transition-all active:scale-95 border border-aqua-300/60">
+                                <Icon name="rocket_launch" className="text-base" />
+                                Masuk Sekarang
+                            </Link>
+                            <a href="#fitur" className="inline-flex items-center gap-2 text-aqua-700 border border-aqua-200/70 px-8 py-4 rounded-2xl font-bold text-sm hover:bg-aqua-100/50 transition-colors">
+                                <Icon name="info" className="text-base" />
+                                Pelajari Fitur
+                            </a>
+                        </div>
                     </div>
 
-                    {/* Feature 3: Industrial Alignment */}
-                    <div className="md:col-span-3 bg-white rounded-3xl p-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-10">
-                        <div className="flex-1">
-                            <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center mb-6">
-                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    <div className="relative hidden lg:block">
+                        <div className="absolute inset-4 bg-aqua-200/25 rounded-full blur-3xl" />
+                        <div className="relative animate-float">
+                            <div className="bg-white/30 backdrop-blur-2xl rounded-[3rem] border border-white/50 p-2 shadow-2xl shadow-aqua-300/30">
+                                <div className="bg-aqua-800 rounded-[2.6rem] p-9 overflow-hidden relative">
+                                    <div className="absolute inset-0 dot-grid opacity-[0.07]" />
+                                    <div className="relative z-10 space-y-7">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-11 w-11 rounded-xl bg-aqua-200/15 border border-aqua-200/25 flex items-center justify-center overflow-hidden">
+                                                    <img src="/images/polman-logo.png" alt="Logo" className="h-8 w-8 object-contain" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-black text-white text-sm">Curriculum Management</p>
+                                                    <p className="text-aqua-200/50 text-xs">OBE System v2.0</p>
+                                                </div>
+                                            </div>
+                                            <span className="text-[10px] font-bold text-aqua-300/60 tracking-widest bg-aqua-200/10 px-2 py-1 rounded-lg border border-aqua-200/15 uppercase">LIVE</span>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-aqua-200/50 text-xs font-bold uppercase tracking-widest mb-3">Coverage Kurikulum</p>
+                                            <div className="space-y-3">
+                                                {[
+                                                    ['CPL Mapping', '86%', 'bg-aqua-200'],
+                                                    ['RPS Completion', '72%', 'bg-aqua-300/70'],
+                                                ].map(([label, value, color]) => (
+                                                    <div key={label}>
+                                                        <div className="flex justify-between items-center mb-1.5">
+                                                            <span className="text-white/70 text-xs font-semibold">{label}</span>
+                                                            <span className="text-aqua-200 text-xs font-black">{value}</span>
+                                                        </div>
+                                                        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                                            <div className={`h-full ${color} rounded-full`} style={{ width: value }} />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-5 gap-2">
+                                            {['CPL', 'CPMK', 'RPS', 'IEA', 'PPM'].map((item, index) => (
+                                                <div key={item} className={`rounded-xl ${index === 0 ? 'bg-aqua-200/20 text-aqua-200 border border-aqua-200/30' : 'bg-white/10 text-white/40 border border-white/10'} p-2.5 text-center`}>
+                                                    <p className="font-black text-xs">{item}</p>
+                                                    <p className="text-[9px] opacity-70 font-bold">OK</p>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="space-y-2.5 pt-1">
+                                            {['Curriculum Map', 'RPS Monitoring', 'OBE Coverage', 'Academic Dashboard'].map((item) => (
+                                                <div className="flex items-center gap-3" key={item}>
+                                                    <div className="w-4 h-4 rounded-full bg-aqua-200/20 flex items-center justify-center shrink-0 border border-aqua-200/30">
+                                                        <Icon name="check" className="text-aqua-200 text-[10px]" />
+                                                    </div>
+                                                    <span className="text-white/60 text-xs font-medium">{item}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-4">Industrial Alignment</h3>
-                            <p className="text-gray-600 leading-relaxed max-w-xl">
-                                Directly mapped to the needs of Industry 4.0. We bridge the gap between academic theory and technical application through deep industrial partnerships and hands-on laboratory experiences.
-                            </p>
                         </div>
-                        
-                        {/* Placeholder for images as seen in design */}
-                        <div className="flex gap-4">
-                            <div className="w-32 h-32 bg-gray-100 rounded-2xl flex items-center justify-center border border-gray-200">
-                                <span className="text-gray-400 text-sm font-bold">Image 1</span>
-                            </div>
-                            <div className="w-32 h-32 bg-gray-900 rounded-2xl flex items-center justify-center">
-                                <span className="text-white text-sm font-bold">Image 2</span>
+
+                        <div className="absolute -bottom-4 -left-8 bg-white rounded-2xl border border-aqua-200/40 p-3.5 shadow-xl shadow-aqua-900/10">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-xl bg-aqua-200/30 flex items-center justify-center">
+                                    <Icon name="check_circle" className="text-aqua-600 text-base" />
+                                </div>
+                                <div>
+                                    <p className="text-aqua-900 font-black text-xs">RPS Diverifikasi</p>
+                                    <p className="text-aqua-600/50 text-[10px]">Dokumen terbaru</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* --- STATS SECTION --- */}
-            <section className="border-y border-gray-200 bg-white/50 py-16 mb-20">
-                <div className="max-w-7xl mx-auto px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
-                    <div>
-                        <div className="text-5xl font-bold text-polman-primary mb-2 font-headline">144</div>
-                        <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Total Credits</div>
+            <section id="fitur" className="py-24 bg-gradient-to-b from-white via-aqua-50/40 to-white">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <span className="inline-block text-[11px] font-bold tracking-[0.35em] uppercase text-aqua-600 bg-aqua-200/20 border border-aqua-200/50 px-4 py-1.5 rounded-full">Fitur Sistem</span>
+                        <h2 className="text-4xl font-black text-aqua-900 mt-4 tracking-tight font-headline">Semua yang dibutuhkan kurikulum</h2>
+                        <p className="text-aqua-700/50 mt-2 text-lg">dalam satu platform terintegrasi.</p>
                     </div>
-                    <div>
-                        <div className="text-5xl font-bold text-polman-primary mb-2 font-headline">12</div>
-                        <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Learning Outcomes</div>
-                    </div>
-                    <div>
-                        <div className="text-5xl font-bold text-polman-primary mb-2 font-headline">20+</div>
-                        <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">Industry Partners</div>
-                    </div>
-                    <div>
-                        <div className="text-5xl font-bold text-polman-primary mb-2 font-headline">100%</div>
-                        <div className="text-xs font-bold text-gray-500 uppercase tracking-widest">IABEE Compliant</div>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {features.map(([icon, title, desc, tag]) => (
+                            <div key={title} className="feature-card group bg-white rounded-3xl p-7 border border-aqua-200/40 hover:-translate-y-1.5 transition-all duration-300 hover:shadow-[0_8px_40px_-8px_rgba(0,128,128,0.18)]">
+                                <div className="flex items-start justify-between mb-5">
+                                    <div className="w-11 h-11 rounded-2xl bg-aqua-200/25 border border-aqua-200/50 flex items-center justify-center group-hover:bg-aqua-200/50 transition-colors">
+                                        <Icon name={icon} className="text-aqua-600 text-xl" />
+                                    </div>
+                                    <span className="text-[10px] font-bold text-aqua-600 bg-aqua-200/20 border border-aqua-200/50 px-2.5 py-1 rounded-full uppercase tracking-wider">{tag}</span>
+                                </div>
+                                <h3 className="font-black text-aqua-900 text-base mb-2 leading-snug">{title}</h3>
+                                <p className="text-aqua-700/55 text-sm leading-relaxed">{desc}</p>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
 
-            {/* --- TIMELINE SECTION --- */}
-            <section className="px-6 lg:px-8 max-w-7xl mx-auto mb-32">
-                <div className="flex justify-between items-end mb-16">
-                    <div>
-                        <h2 className="text-4xl font-headline font-bold text-gray-900 mb-4">The 4-Year Journey</h2>
-                        <p className="text-gray-600 max-w-xl">A strategic timeline from foundational engineering to professional specialization.</p>
+            <section id="alur" className="py-24 bg-aqua-800 relative overflow-hidden">
+                <div className="absolute inset-0 dot-grid opacity-[0.07] pointer-events-none" />
+                <div className="blob w-[40%] h-[80%] bg-aqua-300/10 top-0 -right-[10%]" />
+                <div className="relative max-w-7xl mx-auto px-6 z-10">
+                    <div className="text-center mb-16">
+                        <span className="inline-block text-[11px] font-bold tracking-[0.35em] uppercase text-aqua-200/60 bg-aqua-200/10 border border-aqua-200/15 px-4 py-1.5 rounded-full">Alur Kerja</span>
+                        <h2 className="text-4xl font-black text-white mt-4 tracking-tight font-headline">Bagaimana Cara Kerjanya?</h2>
+                        <p className="text-aqua-200/50 mt-2 text-lg">4 langkah dari data hingga monitoring.</p>
                     </div>
-                    <div className="hidden md:flex items-center gap-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
-                        <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-gray-300"></div> Core</span>
-                        <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-polman-primary"></div> Practice</span>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 relative">
+                        <div className="hidden lg:block absolute top-[52px] left-[calc(12.5%+40px)] right-[calc(12.5%+40px)] h-px bg-gradient-to-r from-aqua-300/20 via-aqua-200/50 to-aqua-300/20 pointer-events-none" />
+                        {steps.map(([num, icon, title, desc, actor]) => (
+                            <div className="group" key={title}>
+                                <div className="bg-white/5 hover:bg-white/10 border border-white/10 hover:border-aqua-200/30 rounded-3xl p-6 transition-all duration-300 h-full">
+                                    <div className="flex items-center gap-3 mb-5">
+                                        <div className="relative w-14 h-14 rounded-2xl bg-aqua-200/10 border border-aqua-200/20 flex items-center justify-center shrink-0 group-hover:bg-aqua-200/20 transition-colors">
+                                            <Icon name={icon} className="text-aqua-200 text-[22px]" />
+                                            <span className="absolute -top-1.5 -right-1.5 text-[10px] font-black text-aqua-300 bg-aqua-800 border border-aqua-600 rounded-lg px-1.5 py-0.5">{num}</span>
+                                        </div>
+                                        <span className="text-[10px] font-bold text-aqua-300/60 uppercase tracking-widest leading-tight">{actor}</span>
+                                    </div>
+                                    <h3 className="font-black text-white text-base mb-2">{title}</h3>
+                                    <p className="text-aqua-200/50 text-sm leading-relaxed">{desc}</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
+            </section>
 
-                <div className="relative pt-6">
-                    {/* The continuous line */}
-                    <div className="absolute top-[31px] left-0 w-full h-[2px] bg-gray-200 z-0 hidden md:block"></div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-6 relative z-10">
-                        {/* Year 1 */}
-                        <div>
-                            <div className="w-4 h-4 rounded-full bg-white border-4 border-polman-primary mb-6 mx-auto md:mx-0 shadow-sm"></div>
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Year 01</div>
-                            <h4 className="text-xl font-bold text-gray-900 mb-4">Foundations</h4>
-                            <ul className="space-y-2 text-sm text-gray-600 border-l-2 border-gray-100 pl-4">
-                                <li className="flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-gray-300">Engineering Physics</li>
-                                <li className="flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-gray-300">Industrial Mathematics</li>
-                                <li className="flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-gray-300">Manufacturing Processes</li>
-                            </ul>
-                        </div>
+            <section id="role" className="py-24 bg-white">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <span className="inline-block text-[11px] font-bold tracking-[0.35em] uppercase text-aqua-600 bg-aqua-200/20 border border-aqua-200/50 px-4 py-1.5 rounded-full">Pengguna Sistem</span>
+                        <h2 className="text-4xl font-black text-aqua-900 mt-4 tracking-tight font-headline">Role Terintegrasi</h2>
+                        <p className="text-aqua-700/50 mt-2 text-lg">Setiap aktor punya peran dan akses yang jelas.</p>
+                    </div>
 
-                        {/* Year 2 */}
-                        <div>
-                            <div className="w-4 h-4 rounded-full bg-polman-secondary border-4 border-white mb-6 mx-auto md:mx-0 shadow-sm"></div>
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Year 02</div>
-                            <h4 className="text-xl font-bold text-gray-900 mb-4">Systems Design</h4>
-                            <ul className="space-y-2 text-sm text-gray-600 border-l-2 border-gray-100 pl-4">
-                                <li className="flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-polman-primary">Operations Research</li>
-                                <li className="flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-polman-primary">Ergonomics & Safety</li>
-                                <li className="flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-gray-300">Work Measurement</li>
-                            </ul>
-                        </div>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+                        {roles.map(([icon, role, sub, desc, perms, dark]) => (
+                            <div key={role as string} className={`rounded-3xl ${dark ? 'bg-aqua-800 border-aqua-600/40' : 'bg-aqua-50/60 border-aqua-200/40'} border p-6 flex flex-col gap-5 hover:-translate-y-1.5 transition-transform duration-300 hover:shadow-[0_8px_40px_-8px_rgba(0,128,128,0.18)]`}>
+                                <div className={`w-12 h-12 rounded-2xl ${dark ? 'bg-aqua-200/15 border border-aqua-200/25' : 'bg-white border border-aqua-200/60'} flex items-center justify-center`}>
+                                    <Icon name={icon as string} className={`${dark ? 'text-aqua-200' : 'text-aqua-600'} text-[22px]`} />
+                                </div>
+                                <div>
+                                    <p className={`text-[10px] font-bold ${dark ? 'text-aqua-300/60' : 'text-aqua-500'} uppercase tracking-widest mb-1`}>{sub as string}</p>
+                                    <h3 className={`font-black ${dark ? 'text-white' : 'text-aqua-900'} text-lg`}>{role as string}</h3>
+                                </div>
+                                <p className={`${dark ? 'text-aqua-200/55' : 'text-aqua-700/60'} text-sm leading-relaxed flex-1`}>{desc as string}</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {(perms as string[]).map((perm) => (
+                                        <span key={perm} className={`${dark ? 'bg-aqua-200/10 text-aqua-200 border-aqua-200/20' : 'bg-white text-aqua-600 border-aqua-200/60'} text-[10px] font-bold border px-2.5 py-1 rounded-full uppercase tracking-wider`}>
+                                            {perm}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
 
-                        {/* Year 3 */}
-                        <div>
-                            <div className="w-4 h-4 rounded-full bg-polman-primary border-4 border-white mb-6 mx-auto md:mx-0 shadow-sm"></div>
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Year 03</div>
-                            <h4 className="text-xl font-bold text-gray-900 mb-4">Industrial Mgmt</h4>
-                            <ul className="space-y-2 text-sm text-gray-600 border-l-2 border-gray-100 pl-4">
-                                <li className="flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-polman-primary">Supply Chain Mgmt</li>
-                                <li className="flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-polman-primary">Quality Engineering</li>
-                                <li className="flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-polman-primary">Production Planning</li>
-                            </ul>
-                        </div>
+            <section className="py-16 bg-aqua-200/15 border-y border-aqua-200/40">
+                <div className="max-w-4xl mx-auto px-6 text-center">
+                    <Icon name="format_quote" className="text-aqua-300 mb-4 block text-[32px]" />
+                    <blockquote className="text-2xl font-black text-aqua-900 tracking-tight leading-snug mb-4 font-headline">
+                        "Menyatukan peta kurikulum, outcome, dan dokumen pembelajaran dalam satu portal akademik."
+                    </blockquote>
+                    <p className="text-aqua-600/60 text-sm font-bold uppercase tracking-widest">TRIN - Politeknik Manufaktur Bandung</p>
+                </div>
+            </section>
 
-                        {/* Year 4 */}
-                        <div>
-                            <div className="w-4 h-4 rounded-full bg-gray-900 border-4 border-white mb-6 mx-auto md:mx-0 shadow-sm"></div>
-                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Year 04</div>
-                            <h4 className="text-xl font-bold text-gray-900 mb-4">Capstone & Intern</h4>
-                            <ul className="space-y-2 text-sm text-gray-600 border-l-2 border-gray-100 pl-4">
-                                <li className="flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-gray-900">Final Project (TA)</li>
-                                <li className="flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-gray-900">Industry Internship</li>
-                                <li className="flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-gray-900">Prof. Certification</li>
-                            </ul>
+            <section className="py-24 bg-white">
+                <div className="max-w-2xl mx-auto px-6">
+                    <div className="bg-aqua-800 rounded-[2.5rem] p-12 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 dot-grid opacity-[0.07] pointer-events-none" />
+                        <div className="blob w-[60%] h-[80%] bg-aqua-300/10 -top-[20%] -right-[20%]" />
+                        <div className="relative z-10">
+                            <div className="w-16 h-16 rounded-3xl bg-aqua-200/15 border border-aqua-200/25 flex items-center justify-center mx-auto mb-6">
+                                <Icon name="rocket_launch" className="text-aqua-200 text-[28px]" />
+                            </div>
+                            <h2 className="text-4xl font-black text-white tracking-tight mb-3 font-headline">Siap memulai?</h2>
+                            <p className="text-aqua-200/55 mb-8 text-base max-w-sm mx-auto leading-relaxed">Masuk ke sistem dan mulai kelola dokumen kurikulum sekarang juga.</p>
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                <Link href={route('login')} className="inline-flex items-center justify-center gap-2 bg-aqua-200 text-aqua-900 px-8 py-4 rounded-2xl font-black text-sm hover:bg-aqua-300 transition-colors active:scale-95 shadow-xl shadow-aqua-900/30">
+                                    <Icon name="login" className="text-base" />
+                                    Masuk ke Sistem
+                                </Link>
+                                {canRegister && (
+                                    <Link href={route('register')} className="inline-flex items-center justify-center gap-2 bg-white/10 text-aqua-100 border border-aqua-200/20 px-8 py-4 rounded-2xl font-bold text-sm hover:bg-white/15 transition-colors active:scale-95">
+                                        <Icon name="person_add" className="text-base" />
+                                        Daftar Akun Baru
+                                    </Link>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* --- CTA / FOOTER SECTION --- */}
-            <section className="bg-polman-primary text-white py-24 relative overflow-hidden rounded-t-[3rem] mx-4 lg:mx-8">
-                {/* Huge Watermark text behind */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-headline font-black text-[15rem] opacity-5 text-white whitespace-nowrap pointer-events-none">
-                    POLMAN
-                </div>
-                
-                <div className="relative z-10 max-w-4xl mx-auto text-center px-6">
-                    <h2 className="text-4xl md:text-5xl font-headline font-bold mb-6">Ready to define your academic future?</h2>
-                    <p className="text-polman-primary-100 text-lg mb-10 max-w-2xl mx-auto opacity-80">
-                        Access the complete TRIN curriculum map, track your OBE progress, and prepare for your industrial career through our integrated portal.
-                    </p>
-                    <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                        <Link 
-                            href={route('login')}
-                            className="w-full sm:w-auto bg-white text-polman-primary px-8 py-4 rounded-xl font-bold transition-all shadow-lg hover:scale-105"
-                        >
-                            Enter Student Portal
-                        </Link>
-                        <button className="w-full sm:w-auto bg-transparent border-2 border-white/30 hover:border-white text-white px-8 py-4 rounded-xl font-bold transition-all">
-                            Contact Department
-                        </button>
+            <footer className="border-t border-aqua-200/30 bg-white">
+                <div className="max-w-7xl mx-auto px-6 py-10">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="flex items-center gap-3">
+                            <div className="h-11 w-11 rounded-xl bg-aqua-800 flex items-center justify-center overflow-hidden">
+                                <img src="/images/polman-logo.png" alt="Logo" className="h-8 w-8 object-contain" />
+                            </div>
+                            <div>
+                                <p className="font-black text-aqua-900 text-sm">TRIN POLMAN Bandung</p>
+                                <p className="text-aqua-600/50 text-[10px] font-semibold">Curriculum Management System</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-6">
+                            <a href="#fitur" className="text-xs text-aqua-600/60 hover:text-aqua-700 font-semibold transition-colors">Fitur</a>
+                            <a href="#alur" className="text-xs text-aqua-600/60 hover:text-aqua-700 font-semibold transition-colors">Alur</a>
+                            <a href="#role" className="text-xs text-aqua-600/60 hover:text-aqua-700 font-semibold transition-colors">Pengguna</a>
+                            <Link href={route('login')} className="text-xs text-aqua-600/60 hover:text-aqua-700 font-semibold transition-colors">Masuk</Link>
+                        </div>
+                        <p className="text-[11px] text-aqua-500/40 font-semibold uppercase tracking-widest">© 2026 - TRIN POLMAN Bandung</p>
                     </div>
-                </div>
-            </section>
-            
-            {/* Very Bottom Footer */}
-            <footer className="max-w-7xl mx-auto px-6 lg:px-8 py-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400 font-medium">
-                <div>
-                    <span className="font-bold text-gray-600 block mb-1">TRIN POLMAN</span>
-                    © 2026 POLMAN Bandung - Industrial Engineering Technology. <br className="hidden md:block"/> All Rights Reserved. IABEE Accredited Program.
-                </div>
-                <div className="flex gap-6">
-                    <a href="#" className="hover:text-gray-600">Privacy Policy</a>
-                    <a href="#" className="hover:text-gray-600">Terms of Service</a>
-                    <a href="#" className="hover:text-gray-600">Academic Calendar</a>
                 </div>
             </footer>
         </div>
