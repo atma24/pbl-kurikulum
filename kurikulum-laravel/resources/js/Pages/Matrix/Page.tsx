@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
 // --- Interfaces ---
@@ -17,11 +17,16 @@ interface Props {
 }
 
 export default function MatrixPage({ cpls, ieas, ppms, mataKuliahs, cplToPpmMatrix }: Props) {
+    const { roles } = usePage().props.auth as any;
+    const isKaprodi = roles?.includes('Kaprodi');
+
     // Tab pertama sekarang adalah MK x CPL
     const [activeTab, setActiveTab] = useState<'mk-cpl' | 'iea-cpl' | 'iea-ppm' | 'cpl-ppm'>('mk-cpl');
 
     // --- Handlers Auto-Sync ---
     const handleSyncMkCpl = (mkId: number, cplId: number, isSelected: boolean) => {
+        if (!isKaprodi) return;
+
         router.post('/matrix/sync-mk-cpl', { // Endpoint baru
             mata_kuliah_id: mkId,
             cpl_id: cplId,
@@ -30,10 +35,14 @@ export default function MatrixPage({ cpls, ieas, ppms, mataKuliahs, cplToPpmMatr
     };
 
     const handleSyncCplIea = (cplId: number, ieaId: number, isSelected: boolean) => {
+        if (!isKaprodi) return;
+
         router.post('/matrix/sync-cpl-iea', { cpl_id: cplId, iea_id: ieaId, is_selected: isSelected }, { preserveScroll: true });
     };
 
     const handleSyncPpmIea = (ppmId: number, ieaId: number, isSelected: boolean) => {
+        if (!isKaprodi) return;
+
         router.post('/matrix/sync-ppm-iea', { ppm_id: ppmId, iea_id: ieaId, is_selected: isSelected }, { preserveScroll: true });
     };
 
@@ -86,7 +95,11 @@ export default function MatrixPage({ cpls, ieas, ppms, mataKuliahs, cplToPpmMatr
             {activeTab === 'mk-cpl' && (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
                     <div className="p-4 bg-gray-50 border-b border-gray-100 text-sm text-gray-700 font-body">
-                        <strong>Tugas Kaprodi:</strong> Berikan tanda centang untuk membebankan CPL pada Mata Kuliah. Dosen hanya bisa membuat CPMK berdasarkan CPL yang diikat di sini.
+                        {isKaprodi ? (
+                            <><strong>Tugas Kaprodi:</strong> Berikan tanda centang untuk membebankan CPL pada Mata Kuliah.</>
+                        ) : (
+                            <><strong>Mode baca:</strong> Anda hanya dapat melihat pemetaan kurikulum.</>
+                        )}
                     </div>
                     <table className="min-w-full border-collapse font-body">
                         <thead>
@@ -114,11 +127,12 @@ export default function MatrixPage({ cpls, ieas, ppms, mataKuliahs, cplToPpmMatr
                                         return (
                                             <td key={cpl.id} className="p-4 border-b text-center">
                                                 <input 
-                                                    type="checkbox" 
-                                                    checked={isChecked}
-                                                    onChange={(e) => handleSyncMkCpl(mk.id, cpl.id, e.target.checked)}
-                                                    className="w-5 h-5 rounded border-gray-300 text-polman-primary focus:ring-polman-primary cursor-pointer transition-colors"
-                                                />
+                                                     type="checkbox" 
+                                                     checked={isChecked}
+                                                     disabled={!isKaprodi}
+                                                     onChange={(e) => handleSyncMkCpl(mk.id, cpl.id, e.target.checked)}
+                                                     className="w-5 h-5 rounded border-gray-300 text-polman-primary focus:ring-polman-primary cursor-pointer transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                                                 />
                                             </td>
                                         );
                                     })}
@@ -152,7 +166,7 @@ export default function MatrixPage({ cpls, ieas, ppms, mataKuliahs, cplToPpmMatr
                                         const isChecked = cpl.ieas?.some(item => item.id === iea.id) || false;
                                         return (
                                             <td key={iea.id} className="p-4 border-b text-center">
-                                                <input type="checkbox" checked={isChecked} onChange={(e) => handleSyncCplIea(cpl.id, iea.id, e.target.checked)} className="w-5 h-5 rounded border-gray-300 text-polman-primary focus:ring-polman-primary cursor-pointer" />
+                                                <input type="checkbox" checked={isChecked} disabled={!isKaprodi} onChange={(e) => handleSyncCplIea(cpl.id, iea.id, e.target.checked)} className="w-5 h-5 rounded border-gray-300 text-polman-primary focus:ring-polman-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60" />
                                             </td>
                                         );
                                     })}
@@ -186,7 +200,7 @@ export default function MatrixPage({ cpls, ieas, ppms, mataKuliahs, cplToPpmMatr
                                         const isChecked = ppm.ieas?.some(item => item.id === iea.id) || false;
                                         return (
                                             <td key={iea.id} className="p-4 border-b text-center">
-                                                <input type="checkbox" checked={isChecked} onChange={(e) => handleSyncPpmIea(ppm.id, iea.id, e.target.checked)} className="w-5 h-5 rounded border-gray-300 text-polman-primary focus:ring-polman-primary cursor-pointer" />
+                                                <input type="checkbox" checked={isChecked} disabled={!isKaprodi} onChange={(e) => handleSyncPpmIea(ppm.id, iea.id, e.target.checked)} className="w-5 h-5 rounded border-gray-300 text-polman-primary focus:ring-polman-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-60" />
                                             </td>
                                         );
                                     })}

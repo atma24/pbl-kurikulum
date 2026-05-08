@@ -40,29 +40,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
 // ==============================================================
-// ZONA 2: HANYA KAPRODI & DOSEN
-// Menggunakan tanda | (OR) agar kedua role bisa akses
+// ZONA 2: KAPRODI & DOSEN (READ-ONLY CURRICULUM MAP)
 // ==============================================================
 Route::middleware(['auth', 'role:Kaprodi|Dosen'])->group(function () {
-    
     // Fitur RPS Utama
     Route::resource('rps', RpsController::class)->except(['show']);
     Route::get('/rps/{id}/pdf', [RpsController::class, 'printPdf'])->name('rps.pdf');
     Route::get('/rps/{id}/download', [RpsController::class, 'downloadPdf'])->name('rps.download');
 
-    // Mata Kuliah & CPMK
-    Route::resource('mata-kuliah', MataKuliahController::class)->except(['create', 'show', 'edit']);
-    
-    // Rute API Data RPS (Penting untuk Form Matriks Penilaian!)
-    Route::get('/mata-kuliah/{id}/rps-data', [MataKuliahController::class, 'apiGetRpsData'])->name('mata-kuliah.rps-data');
-
-    Route::prefix('cpmk')->group(function () {
-        Route::get('/mk/{mata_kuliah_id}', [CpmkController::class, 'index'])->name('cpmk.index');
-        Route::post('/', [CpmkController::class, 'store'])->name('cpmk.store');
-        Route::delete('/{cpmk}', [CpmkController::class, 'destroy'])->name('cpmk.destroy');
-    });
-
-    // Matrix (Akses untuk melihat relasi CPL ke Mata Kuliah)
+    // Matrix read-only untuk Dosen. Endpoint sync tetap hanya Kaprodi.
     Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix.index');
 });
 
@@ -71,6 +57,9 @@ Route::middleware(['auth', 'role:Kaprodi|Dosen'])->group(function () {
 // ZONA 3: OTORISASI MUTLAK (HANYA KAPRODI)
 // ==============================================================
 Route::middleware(['auth', 'role:Kaprodi'])->group(function () {
+    // Mata Kuliah & API Data RPS
+    Route::resource('mata-kuliah', MataKuliahController::class)->except(['create', 'show', 'edit']);
+    Route::get('/mata-kuliah/{id}/rps-data', [MataKuliahController::class, 'apiGetRpsData'])->name('mata-kuliah.rps-data');
     
     // Biodata Dosen
     Route::resource('biodata-dosen', DosenBiodataController::class)

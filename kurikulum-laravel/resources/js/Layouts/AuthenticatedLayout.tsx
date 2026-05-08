@@ -106,6 +106,7 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                         )}
 
                         {/* --- FOLDER MASTER DATA --- */}   
+                        {isKaprodi && (
                         <div className="mt-6 mb-2">
                             <button
                                 onClick={() => setIsMasterFolderOpen(!isMasterFolderOpen)}
@@ -122,7 +123,7 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
 
                             <div className={`space-y-1 overflow-hidden transition-all duration-300 ease-in-out ${isMasterFolderOpen ? 'max-h-[400px] opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
                                 
-                                {/* Menu Mata Kuliah: Dosen dan Kaprodi Bisa Lihat */}
+                                {/* Menu Mata Kuliah */}
                                 <Link
                                     href={route('mata-kuliah.index')}
                                     className={`flex items-center gap-3 px-4 py-2.5 ml-2 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/mata-kuliah') || currentUrl.startsWith('/cpmk')
@@ -134,8 +135,7 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                                 </Link>
 
                                 {/* Isolasi Menu Khusus Kaprodi */}
-                                {isKaprodi && (
-                                    <>
+                                <>
                                         <Link
                                             href={route('cpl.index')}
                                             className={`flex items-center gap-3 px-4 py-2.5 ml-2 rounded-lg text-sm font-semibold transition-colors ${currentUrl.startsWith('/cpl')
@@ -175,17 +175,19 @@ export default function AuthenticatedLayout({ header, children }: PropsWithChild
                                         >
                                             <span>Indikator Kinerja</span>
                                         </Link>
-                                    </>
-                                )}
+                                </>
                             </div>
                         </div>
+                        )}
                     </nav>
                 </div>
 
                 <div className="p-6 space-y-4 shrink-0 bg-white border-t border-gray-100">
-                    <button className="w-full bg-polman-primary text-white rounded-lg py-3 text-sm font-bold flex items-center justify-center gap-2 hover:bg-polman-secondary transition-colors shadow-sm hover:shadow-md">
-                        <span>+ New Revision</span>
-                    </button>
+                    {isKaprodi && (
+                        <button className="w-full bg-polman-primary text-white rounded-lg py-3 text-sm font-bold flex items-center justify-center gap-2 hover:bg-polman-secondary transition-colors shadow-sm hover:shadow-md">
+                            <span>+ New Revision</span>
+                        </button>
+                    )}
 
                     <div className="pt-4 border-t border-gray-100 space-y-2">
                         <button className="flex items-center gap-3 text-gray-500 hover:text-gray-800 text-sm font-semibold px-2 py-2">

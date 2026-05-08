@@ -126,9 +126,8 @@ class DashboardController extends Controller
                 'coverage'  => [],
                 'items'     => [],
                 'shortcuts' => [
-                    ['label' => 'Kelola RPS',     'href' => route('rps.index'),     'description' => 'Rencana Pembelajaran Semester'],
-                    ['label' => 'Mata Kuliah',    'href' => route('mata-kuliah.index'), 'description' => 'Daftar mata kuliah'],
-                    ['label' => 'Curriculum Map', 'href' => route('matrix.index'),  'description' => 'Matriks CPL-MK-IEA-PPM'],
+                    ['label' => 'Kelola RPS',     'href' => route('rps.index'),    'description' => 'Rencana Pembelajaran Semester'],
+                    ['label' => 'Curriculum Map', 'href' => route('matrix.index'), 'description' => 'Matriks CPL-MK-IEA-PPM'],
                 ],
             ]);
         }
@@ -193,9 +192,8 @@ class DashboardController extends Controller
             'coverage' => [],
             'items'    => $mataKuliahs,
             'shortcuts' => [
-                ['label' => 'Kelola RPS',     'href' => route('rps.index'),          'description' => 'Rencana Pembelajaran Semester'],
-                ['label' => 'Mata Kuliah',    'href' => route('mata-kuliah.index'),   'description' => 'Daftar mata kuliah'],
-                ['label' => 'Curriculum Map', 'href' => route('matrix.index'),       'description' => 'Matriks CPL-MK-IEA-PPM'],
+                ['label' => 'Kelola RPS',     'href' => route('rps.index'),    'description' => 'Rencana Pembelajaran Semester'],
+                ['label' => 'Curriculum Map', 'href' => route('matrix.index'), 'description' => 'Matriks CPL-MK-IEA-PPM'],
             ],
         ]);
     }
