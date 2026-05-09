@@ -11,9 +11,14 @@ class DosenBiodataController extends Controller
 {
     public function index()
     {
-        $biodatas = DosenBiodata::with('user:id,dosen_biodata_id,email')
-            ->latest()
-            ->get();
+        $biodatas = DosenBiodata::latest()->get();
+        
+        $biodatas->each(function ($biodata) {
+            $user = \App\Models\User::where('dosen_biodata_id', $biodata->id)
+                ->select('id', 'dosen_biodata_id', 'email')
+                ->first();
+            $biodata->user = $user;
+        });
 
         return Inertia::render('DosenBiodata/page', [
             'biodatas' => $biodatas,
@@ -36,7 +41,9 @@ class DosenBiodataController extends Controller
 
     public function destroy(DosenBiodata $dosenBiodata)
     {
-        if ($dosenBiodata->user()->exists()) {
+        $userExists = \App\Models\User::where('dosen_biodata_id', $dosenBiodata->id)->exists();
+        
+        if ($userExists) {
             return redirect()->back()->withErrors([
                 'biodata' => 'Biodata dosen tidak dapat dihapus karena sudah terhubung ke akun dosen.',
             ]);

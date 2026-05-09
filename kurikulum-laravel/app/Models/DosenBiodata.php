@@ -26,11 +26,6 @@ class DosenBiodata extends Model
         'alamat',
     ];
 
-    public function user(): HasOne
-    {
-        return $this->hasOne(User::class);
-    }
-
     public function mataKuliahs()
     {
         return $this->belongsToMany(MataKuliah::class, 'dosen_biodata_mata_kuliah', 'dosen_biodata_id', 'mata_kuliah_id')
