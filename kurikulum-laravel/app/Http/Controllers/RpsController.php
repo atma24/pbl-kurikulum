@@ -14,7 +14,13 @@ class RpsController extends Controller
 {
     public function index()
     {
-        $rps = Rps::with(['mataKuliah:id,kode_mk,nama_mk', 'dosenBiodata', 'penilaians', 'details'])->get();
+        $rps = Rps::with(['mataKuliah:id,kode_mk,nama_mk', 'penilaians', 'details'])->get();
+        
+        $rps->each(function ($item) {
+            if ($item->dosen_biodata_id) {
+                $item->dosenBiodata = DosenBiodata::find($item->dosen_biodata_id);
+            }
+        });
         
         $mataKuliahs = MataKuliah::select('id', 'kode_mk', 'nama_mk')->get();
         $allDosen = DosenBiodata::orderBy('nama_lengkap')->get();
@@ -150,11 +156,14 @@ class RpsController extends Controller
     {
         $rps = Rps::with([
             'mataKuliah.cpmks.indikatorKinerjas.cpl', 
-            'dosenBiodata', 
             'penilaians.cpmk', 
             'details',
             'mataKuliah.prasyarat',
         ])->findOrFail($id);
+
+        if ($rps->dosen_biodata_id) {
+            $rps->dosenBiodata = DosenBiodata::find($rps->dosen_biodata_id);
+        }
 
         $pdf = Pdf::loadView('pdf.rps', compact('rps'))->setPaper('a4', 'landscape');
 
@@ -167,11 +176,14 @@ class RpsController extends Controller
     {
         $rps = Rps::with([
             'mataKuliah.cpmks.indikatorKinerjas.cpl', 
-            'dosenBiodata', 
             'penilaians.cpmk', 
             'details',
             'mataKuliah.prasyarat',
         ])->findOrFail($id);
+
+        if ($rps->dosen_biodata_id) {
+            $rps->dosenBiodata = DosenBiodata::find($rps->dosen_biodata_id);
+        }
 
         $pdf = Pdf::loadView('pdf.rps', compact('rps'))->setPaper('a4', 'landscape');
 

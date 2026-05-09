@@ -13,10 +13,13 @@ class DosenController extends Controller
 {
     public function index()
     {
-        // Mengambil semua user yang memiliki role 'Dosen'
-        $dosens = User::role('Dosen')
-            ->with('dosenBiodata:id,nama_lengkap,gelar_depan,gelar_belakang,nip,nidn,prodi,jabatan_akademik')
-            ->get();
+        $dosens = User::role('Dosen')->get();
+        
+        $dosens->each(function ($user) {
+            if ($user->dosen_biodata_id) {
+                $user->dosenBiodata = DosenBiodata::find($user->dosen_biodata_id);
+            }
+        });
         
         return Inertia::render('Dosen/Index', [
             'dosens' => $dosens
