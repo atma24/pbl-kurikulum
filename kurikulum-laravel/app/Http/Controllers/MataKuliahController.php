@@ -115,11 +115,16 @@ class MataKuliahController extends Controller
     /**
      * Assign dosen pengampu ke Mata Kuliah
      */
+/**
+     * Assign dosen pengampu ke Mata Kuliah
+     */
     public function attachDosen(Request $request, $id)
     {
         $mk = MataKuliah::findOrFail($id);
+
         $validated = $request->validate([
-            'dosen_biodata_id' => 'required|exists:dosen_biodatas,id',
+            // Format validasi Laravel: exists:nama_koneksi.nama_tabel,kolom
+            'dosen_biodata_id' => 'required|exists:central.dosen_biodatas,id',
         ]);
 
         $mk->dosenPengampus()->syncWithoutDetaching([$validated['dosen_biodata_id']]);

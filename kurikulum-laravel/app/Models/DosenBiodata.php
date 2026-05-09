@@ -10,7 +10,17 @@ class DosenBiodata extends Model
 {
     use HasFactory;
 
-    protected $connection = 'central';
+    // 1. HAPUS ATAU COMMENT BARIS INI:
+    // protected $connection = 'central';
+
+    // 2. TAMBAHKAN METHOD INI:
+    public function getTable()
+    {
+        // Ambil nama database central dari konfigurasi agar tetap dinamis
+        // lalu gabungkan dengan nama tabel dosen_biodatas.
+        $centralDb = config('database.connections.central.database');
+        return $centralDb . '.dosen_biodatas';
+    }
 
     protected $fillable = [
         'nama_lengkap',
@@ -32,15 +42,9 @@ class DosenBiodata extends Model
                     ->withTimestamps();
     }
 
-    /**
-     * Helper: Nama lengkap dengan gelar
-     */
+    // Helper: Nama lengkap dengan gelar tetap dibiarkan...
     public function getNamaLengkapGelarAttribute(): string
     {
-        return trim(implode(' ', array_filter([
-            $this->gelar_depan,
-            $this->nama_lengkap,
-            $this->gelar_belakang,
-        ])));
+        // ...
     }
 }
