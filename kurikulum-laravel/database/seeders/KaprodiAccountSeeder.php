@@ -15,7 +15,7 @@ class KaprodiAccountSeeder extends Seeder
         Role::findOrCreate('Kaprodi');
 
         $biodata = DosenBiodata::updateOrCreate(
-            ['email' => 'siti@ae.polman-bandung.ac.id'],
+            ['email' => 'admin@ae.ac.id'],
             [
                 'nama_lengkap' => 'ADMINISTRATOR KAPRODI',
                 'gelar_depan' => null,
