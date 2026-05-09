@@ -9,18 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('dosen_biodata_id')
-                ->nullable()
-                ->after('id')
-                ->constrained('dosen_biodatas')
-                ->nullOnDelete();
+            $table->unsignedBigInteger('dosen_biodata_id')->nullable()->after('id')->index();
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('dosen_biodata_id');
+            $table->dropColumn('dosen_biodata_id');
         });
     }
 };

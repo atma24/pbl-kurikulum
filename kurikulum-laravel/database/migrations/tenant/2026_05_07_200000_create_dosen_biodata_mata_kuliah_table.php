@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('dosen_biodata_mata_kuliah', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('dosen_biodata_id')->constrained('dosen_biodatas')->cascadeOnDelete();
+            $table->unsignedBigInteger('dosen_biodata_id')->index();
             $table->foreignId('mata_kuliah_id')->constrained('mata_kuliahs')->cascadeOnDelete();
             $table->timestamps();
 

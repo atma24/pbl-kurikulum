@@ -14,14 +14,13 @@ return new class extends Migration
         });
 
         Schema::table('rps', function (Blueprint $table) {
-            $table->foreignId('dosen_biodata_id')->nullable()->after('mata_kuliah_id')->constrained('dosen_biodatas')->nullOnDelete();
+            $table->unsignedBigInteger('dosen_biodata_id')->nullable()->after('mata_kuliah_id')->index();
         });
     }
 
     public function down(): void
     {
         Schema::table('rps', function (Blueprint $table) {
-            $table->dropForeign(['dosen_biodata_id']);
             $table->dropColumn('dosen_biodata_id');
         });
 

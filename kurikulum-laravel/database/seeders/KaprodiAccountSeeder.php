@@ -17,13 +17,13 @@ class KaprodiAccountSeeder extends Seeder
         $biodata = DosenBiodata::updateOrCreate(
             ['email' => 'siti@ae.polman-bandung.ac.id'],
             [
-                'nama_lengkap' => 'Siti Aminah',
+                'nama_lengkap' => 'ADMINISTRATOR KAPRODI',
                 'gelar_depan' => null,
-                'gelar_belakang' => 'S.T., M.T.',
-                'nip' => '197408172009122001',
+                'gelar_belakang' => '',
+                'nip' => '',
                 'nidn' => '',
                 'no_hp' => null,
-                'prodi' => 'Teknologi Rekayasa Informatika Industri',
+                'prodi' => '',
                 'jabatan_akademik' => 'Kaprodi',
                 'bidang_keahlian' => null,
                 'alamat' => null,
