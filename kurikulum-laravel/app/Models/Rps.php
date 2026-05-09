@@ -17,9 +17,13 @@ protected $fillable = [
         return $this->belongsTo(MataKuliah::class);
     }
 
-    public function dosenBiodata()
+    public function getDosenBiodataAttribute(): ?DosenBiodata
     {
-        return $this->belongsTo(DosenBiodata::class, 'dosen_biodata_id');
+        if (!$this->dosen_biodata_id) {
+            return null;
+        }
+
+        return DosenBiodata::query()->find($this->dosen_biodata_id);
     }
 
     public function penilaians()

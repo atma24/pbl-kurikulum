@@ -3,11 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -51,8 +49,12 @@ class User extends Authenticatable
         ];
     }
 
-    public function dosenBiodata(): BelongsTo
+    public function getDosenBiodataAttribute(): ?DosenBiodata
     {
-        return $this->belongsTo(DosenBiodata::class);
+        if (!$this->dosen_biodata_id) {
+            return null;
+        }
+
+        return DosenBiodata::query()->find($this->dosen_biodata_id);
     }
 }

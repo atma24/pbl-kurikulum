@@ -10,6 +10,8 @@ class DosenBiodata extends Model
 {
     use HasFactory;
 
+    protected $connection = 'central';
+
     protected $fillable = [
         'nama_lengkap',
         'gelar_depan',
