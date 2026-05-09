@@ -47,6 +47,8 @@ function SubMenuLink({ href, active, children }: { href: string; active: boolean
 
 export default function AuthenticatedLayout({ children }: PropsWithChildren<Props>) {
     const { user, roles } = usePage().props.auth as any;
+    const { tenant } = usePage().props as any;
+    const tenantKode = tenant?.kode ?? 'PORTAL';
     const currentUrl = usePage().url;
     const isKaprodi = roles?.includes('Kaprodi');
 
@@ -75,7 +77,7 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren<Prop
                         <img src="/images/polman-logo.png" alt="POLMAN" className="w-12 h-12 object-contain" />
                     </div>
                     <span className="text-3xl font-black tracking-tighter italic uppercase text-white leading-none font-headline">
-                        TRIN <span className="text-aqua-200">PORTAL</span>
+                        {tenantKode} <span className="text-aqua-200">PORTAL</span>
                     </span>
                 </div>
 
@@ -173,7 +175,7 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren<Prop
                 <header className="bg-white border-b border-gray-100 px-8 h-16 flex items-center justify-between flex-shrink-0 shadow-sm">
                     <div>
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">POLMAN Bandung</p>
-                        <p className="text-xs font-black italic text-primary uppercase">TRIN Curriculum Portal</p>
+                        <p className="text-xs font-black italic text-primary uppercase">{tenantKode} Curriculum Portal</p>
                     </div>
 
                     <div className="flex items-center gap-2">

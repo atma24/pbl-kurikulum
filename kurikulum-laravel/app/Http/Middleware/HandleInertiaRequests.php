@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Stancl\Tenancy\Facades\Tenancy;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -33,9 +34,12 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
-                // Injeksi roles dan permissions secara paralel, bukan di dalam tabel user
                 'roles' => $request->user() ? $request->user()->getRoleNames() : [],
                 'permissions' => $request->user() ? $request->user()->getAllPermissions()->pluck('name') : [],
+            ],
+            'tenant' => [
+                'id' => tenancy()->initialized ? tenant('id') : null,
+                'kode' => tenancy()->initialized ? strtoupper(tenant('id')) : null,
             ],
             // Opsional: Flash message untuk notifikasi sukses/error
             'flash' => [

@@ -17,16 +17,16 @@ class KaprodiAccountSeeder extends Seeder
         $biodata = DosenBiodata::updateOrCreate(
             ['email' => 'admin@ae.ac.id'],
             [
-                'nama_lengkap' => 'ADMINISTRATOR KAPRODI',
-                'gelar_depan' => null,
-                'gelar_belakang' => '',
-                'nip' => '',
-                'nidn' => '',
-                'no_hp' => null,
-                'prodi' => '',
+                'nama_lengkap' => 'tessss',
+                'gelar_depan'      => null,
+                'gelar_belakang'   => null,
+                'nip'              => null, // ← null, bukan ''
+                'nidn'             => null, // ← null, bukan ''
+                'no_hp'            => null,
+                'prodi'            => '',
                 'jabatan_akademik' => 'Kaprodi',
-                'bidang_keahlian' => null,
-                'alamat' => null,
+                'bidang_keahlian'  => null,
+                'alamat'           => null,
             ]
         );
 

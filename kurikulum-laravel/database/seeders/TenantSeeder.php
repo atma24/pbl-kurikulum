@@ -18,7 +18,16 @@ class TenantSeeder extends Seeder
         ];
 
         foreach ($tenants as $item) {
-            $tenant = Tenant::firstOrCreate(['id' => $item['id']]);
+            // Gunakan create() bukan firstOrCreate() supaya event TenantCreated
+            // terpicu → database tenant otomatis dibuat & di-migrate
+            $existing = Tenant::find($item['id']);
+
+            if ($existing) {
+                $tenant = $existing;
+            } else {
+                $tenant = Tenant::create(['id' => $item['id']]);
+            }
+
             $tenant->domains()->firstOrCreate(['domain' => $item['domain']]);
 
             Prodi::updateOrCreate(
