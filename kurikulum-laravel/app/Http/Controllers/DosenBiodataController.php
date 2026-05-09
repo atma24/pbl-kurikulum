@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DosenBiodata;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class DosenBiodataController extends Controller
@@ -59,48 +60,9 @@ class DosenBiodataController extends Controller
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'gelar_depan' => ['nullable', 'string', 'max:50'],
             'gelar_belakang' => ['nullable', 'string', 'max:50'],
-            'nip' => [
-                'required',
-                'string',
-                'max:50',
-                function ($attribute, $value, $fail) use ($ignoreId) {
-                    $query = DosenBiodata::on('central')->where('nip', $value);
-                    if ($ignoreId) {
-                        $query->where('id', '!=', $ignoreId);
-                    }
-                    if ($query->exists()) {
-                        $fail('NIP sudah digunakan oleh dosen lain.');
-                    }
-                },
-            ],
-            'nidn' => [
-                'required',
-                'string',
-                'max:50',
-                function ($attribute, $value, $fail) use ($ignoreId) {
-                    $query = DosenBiodata::on('central')->where('nidn', $value);
-                    if ($ignoreId) {
-                        $query->where('id', '!=', $ignoreId);
-                    }
-                    if ($query->exists()) {
-                        $fail('NIDN sudah digunakan oleh dosen lain.');
-                    }
-                },
-            ],
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                function ($attribute, $value, $fail) use ($ignoreId) {
-                    $query = DosenBiodata::on('central')->where('email', $value);
-                    if ($ignoreId) {
-                        $query->where('id', '!=', $ignoreId);
-                    }
-                    if ($query->exists()) {
-                        $fail('Email sudah digunakan oleh dosen lain.');
-                    }
-                },
-            ],
+            'nip' => ['required', 'string', 'max:50', Rule::unique('dosen_biodatas', 'nip')->ignore($ignoreId)],
+            'nidn' => ['required', 'string', 'max:50', Rule::unique('dosen_biodatas', 'nidn')->ignore($ignoreId)],
+            'email' => ['required', 'email', 'max:255', Rule::unique('dosen_biodatas', 'email')->ignore($ignoreId)],
             'no_hp' => ['nullable', 'string', 'max:30'],
             'prodi' => ['required', 'string', 'max:255'],
             'jabatan_akademik' => ['required', 'string', 'max:100'],
