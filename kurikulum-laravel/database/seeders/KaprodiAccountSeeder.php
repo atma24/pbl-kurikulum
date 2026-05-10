@@ -15,15 +15,15 @@ class KaprodiAccountSeeder extends Seeder
         Role::findOrCreate('Kaprodi');
 
         $biodata = DosenBiodata::updateOrCreate(
-            ['email' => 'admin@ae.ac.id'],
+            ['email' => 'adhitya@ae.polman-bandung.ac.id'],
             [
-                'nama_lengkap' => 'tessss',
+                'nama_lengkap' => 'Adhitya Sumardi Sunarya',
                 'gelar_depan'      => null,
-                'gelar_belakang'   => null,
-                'nip'              => null, // ← null, bukan ''
+                'gelar_belakang'   => 'S.Si., M.Si.',
+                'nip'              => '198110052009121005', 
                 'nidn'             => null, // ← null, bukan ''
                 'no_hp'            => null,
-                'prodi'            => '',
+                'prodi'            => 'Teknologi Rekayasa Mekatronika',
                 'jabatan_akademik' => 'Kaprodi',
                 'bidang_keahlian'  => null,
                 'alamat'           => null,

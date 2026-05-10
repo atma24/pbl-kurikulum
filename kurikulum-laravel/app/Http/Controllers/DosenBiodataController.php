@@ -32,24 +32,22 @@ class DosenBiodataController extends Controller
     public function store(Request $request)
     {
         $request->merge([
-            'nip'  => $request->nip  ?: null,
-            'nidn' => $request->nidn ?: null,
+            'nip'  => $this->normalizeEmptyToNull($request->nip),
+            'nidn' => $this->normalizeEmptyToNull($request->nidn),
         ]);
 
         DosenBiodata::create($this->validatedData($request));
-
         return redirect()->back()->with('success', 'Biodata dosen berhasil ditambahkan.');
     }
 
     public function update(Request $request, DosenBiodata $dosenBiodata)
     {
         $request->merge([
-            'nip'  => $request->nip  ?: null,
-            'nidn' => $request->nidn ?: null,
+            'nip'  => $this->normalizeEmptyToNull($request->nip),
+            'nidn' => $this->normalizeEmptyToNull($request->nidn),
         ]);
 
         $dosenBiodata->update($this->validatedData($request, $dosenBiodata->id));
-
         return redirect()->back()->with('success', 'Biodata dosen berhasil diperbarui.');
     }
 
@@ -67,7 +65,12 @@ class DosenBiodataController extends Controller
 
         return redirect()->back()->with('success', 'Biodata dosen berhasil dihapus.');
     }
-
+    private function normalizeEmptyToNull(?string $value): ?string
+    {
+        if ($value === null) return null;
+        $trimmed = trim($value);
+        return ($trimmed === '' || $trimmed === '-') ? null : $trimmed;
+    }
     private function validatedData(Request $request, ?int $ignoreId = null): array
     {
         return $request->validate([
