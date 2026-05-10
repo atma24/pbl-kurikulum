@@ -48,13 +48,12 @@ class DosenController extends Controller
         $validated = $request->validate([
             'dosen_biodata_id' => [
                 'required',
-                'exists:dosen_biodatas,id',
+                'exists:central.dosen_biodatas,id', // ← tambah 'central.'
                 Rule::unique('users', 'dosen_biodata_id'),
             ],
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8', // Tambahkan '|confirmed' jika ingin input 2 kali
+            'password' => 'required|string|min:8',
         ]);
-
         $biodata = DosenBiodata::findOrFail($validated['dosen_biodata_id']);
 
         $user = User::create([
