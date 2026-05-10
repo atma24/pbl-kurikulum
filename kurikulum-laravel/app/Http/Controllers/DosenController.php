@@ -28,16 +28,15 @@ class DosenController extends Controller
 
     public function create()
     {
-        $biodatas = DosenBiodata::whereDoesntHave('user')
+        // Ambil semua ID dosen yang sudah punya akun di tenant DB
+        $usedIds = User::whereNotNull('dosen_biodata_id')
+            ->pluck('dosen_biodata_id')
+            ->toArray();
+
+        // Filter di central: ambil yang ID-nya belum dipakai
+        $biodatas = DosenBiodata::whereNotIn('id', $usedIds)
             ->orderBy('nama_lengkap')
-            ->get([
-                'id',
-                'nama_lengkap',
-                'gelar_depan',
-                'gelar_belakang',
-                'nip',
-                'email',
-            ]);
+            ->get(['id', 'nama_lengkap', 'gelar_depan', 'gelar_belakang', 'nip', 'email']);
 
         return Inertia::render('Dosen/Create', [
             'biodatas' => $biodatas,

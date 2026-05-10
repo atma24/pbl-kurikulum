@@ -12,12 +12,16 @@ class DosenBiodataController extends Controller
     public function index()
     {
         $biodatas = DosenBiodata::latest()->get();
-        
-        $biodatas->each(function ($biodata) {
-            $user = \App\Models\User::where('dosen_biodata_id', $biodata->id)
-                ->select('id', 'dosen_biodata_id', 'email')
-                ->first();
-            $biodata->user = $user;
+
+        // Ambil semua user yang punya dosen_biodata_id dari tenant DB
+        $users = \App\Models\User::whereNotNull('dosen_biodata_id')
+            ->select('id', 'dosen_biodata_id', 'email')
+            ->get()
+            ->keyBy('dosen_biodata_id'); // index by dosen_biodata_id biar O(1)
+
+        // Map manual karena cross-DB
+        $biodatas->each(function ($biodata) use ($users) {
+            $biodata->user = $users->get($biodata->id);
         });
 
         return Inertia::render('DosenBiodata/page', [
@@ -27,6 +31,11 @@ class DosenBiodataController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge([
+            'nip'  => $request->nip  ?: null,
+            'nidn' => $request->nidn ?: null,
+        ]);
+
         DosenBiodata::create($this->validatedData($request));
 
         return redirect()->back()->with('success', 'Biodata dosen berhasil ditambahkan.');
@@ -34,6 +43,11 @@ class DosenBiodataController extends Controller
 
     public function update(Request $request, DosenBiodata $dosenBiodata)
     {
+        $request->merge([
+            'nip'  => $request->nip  ?: null,
+            'nidn' => $request->nidn ?: null,
+        ]);
+
         $dosenBiodata->update($this->validatedData($request, $dosenBiodata->id));
 
         return redirect()->back()->with('success', 'Biodata dosen berhasil diperbarui.');
@@ -60,8 +74,8 @@ class DosenBiodataController extends Controller
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'gelar_depan' => ['nullable', 'string', 'max:50'],
             'gelar_belakang' => ['nullable', 'string', 'max:50'],
-            'nip' => ['required', 'string', 'max:50', Rule::unique('dosen_biodatas', 'nip')->ignore($ignoreId)],
-            'nidn' => ['required', 'string', 'max:50', Rule::unique('dosen_biodatas', 'nidn')->ignore($ignoreId)],
+            'nip'  => ['nullable', 'string', 'max:50', Rule::unique('dosen_biodatas', 'nip')->ignore($ignoreId)->whereNotNull('nip')],
+            'nidn' => ['nullable', 'string', 'max:50', Rule::unique('dosen_biodatas', 'nidn')->ignore($ignoreId)->whereNotNull('nidn')],
             'email' => ['required', 'email', 'max:255', Rule::unique('dosen_biodatas', 'email')->ignore($ignoreId)],
             'no_hp' => ['nullable', 'string', 'max:30'],
             'prodi' => ['required', 'string', 'max:255'],
