@@ -39,7 +39,7 @@ class RpsController extends Controller
         DB::transaction(function () use ($validated, $request) {
             $rps = Rps::create([
                 'mata_kuliah_id'     => $validated['mata_kuliah_id'],
-                'dosen_biodata_id'   => $validated['dosen_biodata_id'],
+                'dosen_biodata_id'   => 'required|exists:central.dosen_biodatas,id',
                 'tahun_akademik'     => $validated['tahun_akademik'],
                 'tanggal_penyusunan' => $validated['tanggal_penyusunan'],
                 'pustaka_utama'      => $validated['pustaka_utama'],

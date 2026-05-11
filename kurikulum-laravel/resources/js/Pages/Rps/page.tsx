@@ -209,13 +209,21 @@ export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], m
     const removeMingguan = (index: number) => setData('details', data.details.filter((_, i) => i !== index));
 
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (modalMode === 'add') {
-            post(route('rps.store'), { onSuccess: () => setIsModalOpen(false) });
-        } else {
-            post(route('rps.update', selectedId!), { onSuccess: () => setIsModalOpen(false) });
-        }
-    };
+            e.preventDefault();
+            
+
+            if (modalMode === 'add') {
+                post(route('rps.store'), { 
+                    forceFormData: true,
+                    onSuccess: () => setIsModalOpen(false) 
+                });
+            } else {
+                post(route('rps.update', selectedId!), { 
+                    forceFormData: true,
+                    onSuccess: () => setIsModalOpen(false) 
+                });
+            }
+        };
 
     const confirmDelete = () => {
         if (deleteId) {
