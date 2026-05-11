@@ -3,7 +3,10 @@ import { Head, useForm, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Dialog } from '@headlessui/react';
 import axios from 'axios';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { 
+    Radar, RadarChart, PolarGrid, PolarAngleAxis, 
+    PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip 
+} from 'recharts';
 
 interface CPMK { id: number; kode_cpmk: string; deskripsi: string; }
 interface MataKuliah { id: number; kode_mk: string; nama_mk: string; }
@@ -209,21 +212,21 @@ export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], m
     const removeMingguan = (index: number) => setData('details', data.details.filter((_, i) => i !== index));
 
     const handleSubmit = (e: React.FormEvent) => {
-            e.preventDefault();
-            
-
-            if (modalMode === 'add') {
-                post(route('rps.store'), { 
-                    forceFormData: true,
-                    onSuccess: () => setIsModalOpen(false) 
-                });
-            } else {
-                post(route('rps.update', selectedId!), { 
-                    forceFormData: true,
-                    onSuccess: () => setIsModalOpen(false) 
-                });
-            }
-        };
+        e.preventDefault();
+        
+        // Memaksa Inertia mengirim object/array kompleks dengan sempurna
+        if (modalMode === 'add') {
+            post(route('rps.store'), { 
+                forceFormData: true, 
+                onSuccess: () => setIsModalOpen(false) 
+            });
+        } else {
+            post(route('rps.update', selectedId!), { 
+                forceFormData: true, 
+                onSuccess: () => setIsModalOpen(false) 
+            });
+        }
+    };
 
     const confirmDelete = () => {
         if (deleteId) {
@@ -464,24 +467,23 @@ export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], m
                                     
                                     {/* GRAFIK PENILAIAN */}
                                     <div className="mt-6">
-                                        <label className="block text-sm font-bold text-gray-700 mb-2 border-b pb-1">Grafik Distribusi Penilaian</label>
-                                        <div className="w-full h-64 bg-white border border-gray-200 rounded-lg p-4">
+                                        <label className="block text-sm font-bold text-gray-700 mb-2 border-b pb-1">Visualisasi Matriks Penilaian (Spider Chart)</label>
+                                        <div className="w-full h-80 bg-white border border-gray-200 rounded-lg p-4 flex justify-center">
                                             <ResponsiveContainer width="100%" height="100%">
-                                                <BarChart
-                                                    data={chartData}
-                                                    margin={{ top: 5, right: 30, left: -20, bottom: 5 }}
-                                                >
-                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                                    <XAxis dataKey="name" tick={{fontSize: 12}} />
-                                                    <YAxis tick={{fontSize: 12}} />
-                                                    <Tooltip cursor={{fill: '#f3f4f6'}} />
+                                                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
+                                                    <PolarGrid />
+                                                    <PolarAngleAxis dataKey="name" tick={{fontSize: 12}} />
+                                                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{fontSize: 12}} />
+                                                    
+                                                    <Radar name="Quiz" dataKey="Quiz" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.5} />
+                                                    <Radar name="Tugas" dataKey="Tugas" stroke="#10b981" fill="#10b981" fillOpacity={0.5} />
+                                                    <Radar name="Project" dataKey="Project" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.5} />
+                                                    <Radar name="UTS" dataKey="UTS" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.5} />
+                                                    <Radar name="UAS" dataKey="UAS" stroke="#ef4444" fill="#ef4444" fillOpacity={0.5} />
+                                                    
                                                     <Legend wrapperStyle={{fontSize: '12px'}} />
-                                                    <Bar dataKey="Quiz" stackId="a" fill="#3b82f6" />
-                                                    <Bar dataKey="Tugas" stackId="a" fill="#10b981" />
-                                                    <Bar dataKey="Project" stackId="a" fill="#f59e0b" />
-                                                    <Bar dataKey="UTS" stackId="a" fill="#8b5cf6" />
-                                                    <Bar dataKey="UAS" stackId="a" fill="#ef4444" />
-                                                </BarChart>
+                                                    <Tooltip />
+                                                </RadarChart>
                                             </ResponsiveContainer>
                                         </div>
                                     </div>

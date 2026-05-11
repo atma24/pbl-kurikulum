@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Validation\Rule;
+
 class RpsController extends Controller
 {
     public function index()
@@ -36,66 +38,76 @@ class RpsController extends Controller
     {
         $validated = $this->validateRps($request);
 
-        DB::transaction(function () use ($validated, $request) {
-            $rps = Rps::create([
-                'mata_kuliah_id'     => $validated['mata_kuliah_id'],
-                'dosen_biodata_id'   => 'required|exists:central.dosen_biodatas,id',
-                'tahun_akademik'     => $validated['tahun_akademik'],
-                'tanggal_penyusunan' => $validated['tanggal_penyusunan'],
-                'pustaka_utama'      => $validated['pustaka_utama'],
-                'pustaka_pendukung'  => $validated['pustaka_pendukung'] ?? null,
-                'bahan_kajian_utama' => $validated['bahan_kajian_utama'],
-                // Simpan 3 file
-                'tte_dosen'          => $request->file('tte_dosen')->store('rps_tte', 'public'),
-                'tte_kaprodi'        => $request->file('tte_kaprodi')->store('rps_tte', 'public'),
-                'tte_kajur'          => $request->file('tte_kajur')->store('rps_tte', 'public'),
-                'kode_dokumen'       => $validated['kode_dokumen'],
-            ]);
+        try {
+            DB::transaction(function () use ($validated, $request) {
+                $rps = Rps::create([
+                    'mata_kuliah_id'     => $validated['mata_kuliah_id'],
+                    'dosen_biodata_id'   => $validated['dosen_biodata_id'],
+                    'tahun_akademik'     => $validated['tahun_akademik'],
+                    'tanggal_penyusunan' => $validated['tanggal_penyusunan'],
+                    'pustaka_utama'      => $validated['pustaka_utama'],
+                    'pustaka_pendukung'  => $validated['pustaka_pendukung'] ?? null,
+                    'bahan_kajian_utama' => $validated['bahan_kajian_utama'],
+                    'tte_dosen'          => $request->file('tte_dosen')->store('rps_tte', 'public'),
+                    'tte_kaprodi'        => $request->file('tte_kaprodi')->store('rps_tte', 'public'),
+                    'tte_kajur'          => $request->file('tte_kajur')->store('rps_tte', 'public'),
+                    'kode_dokumen'       => $validated['kode_dokumen'],
+                ]);
 
-            $rps->penilaians()->createMany($validated['penilaians']);
-            $rps->details()->createMany($validated['details']);
-        });
+                $rps->penilaians()->createMany($validated['penilaians']);
+                $rps->details()->createMany($validated['details']);
+            });
 
-        return redirect()->route('rps.index')->with('success', 'RPS berhasil ditempa.');
+            return redirect()->route('rps.index')->with('success', 'RPS berhasil ditempa.');
+            
+        } catch (\Exception $e) {
+            // 🔥 JEBAKAN ERROR: Memunculkan pesan asli dari sistem/database ke UI
+            return back()->withErrors(['dosen_biodata_id' => 'SISTEM GAGAL MENYIMPAN: ' . $e->getMessage()]);
+        }
     }
 
-    // Bypass error huruf "s" dengan memakai $id
     public function update(Request $request, $id)
     {
         $rps = Rps::findOrFail($id);
         $validated = $this->validateRps($request, true);
 
-        DB::transaction(function () use ($validated, $request, $rps) {
-            $data = [
-                'mata_kuliah_id'     => $validated['mata_kuliah_id'],
-                'dosen_biodata_id'   => $validated['dosen_biodata_id'],
-                'tahun_akademik'     => $validated['tahun_akademik'],
-                'tanggal_penyusunan' => $validated['tanggal_penyusunan'],
-                'pustaka_utama'      => $validated['pustaka_utama'],
-                'pustaka_pendukung'  => $validated['pustaka_pendukung'] ?? null,
-                'bahan_kajian_utama' => $validated['bahan_kajian_utama'],
-                'kode_dokumen'       => $validated['kode_dokumen'],
-            ];
+        try {
+            DB::transaction(function () use ($validated, $request, $rps) {
+                $data = [
+                    'mata_kuliah_id'     => $validated['mata_kuliah_id'],
+                    'dosen_biodata_id'   => $validated['dosen_biodata_id'],
+                    'tahun_akademik'     => $validated['tahun_akademik'],
+                    'tanggal_penyusunan' => $validated['tanggal_penyusunan'],
+                    'pustaka_utama'      => $validated['pustaka_utama'],
+                    'pustaka_pendukung'  => $validated['pustaka_pendukung'] ?? null,
+                    'bahan_kajian_utama' => $validated['bahan_kajian_utama'],
+                    'kode_dokumen'       => $validated['kode_dokumen'],
+                ];
 
-            // Cek dan ganti masing-masing TTE jika ada file baru
-            $ttes = ['tte_dosen', 'tte_kaprodi', 'tte_kajur'];
-            foreach ($ttes as $tte) {
-                if ($request->hasFile($tte)) {
-                    if ($rps->$tte) Storage::disk('public')->delete($rps->$tte);
-                    $data[$tte] = $request->file($tte)->store('rps_tte', 'public');
+                // Cek dan ganti masing-masing TTE jika ada file baru
+                $ttes = ['tte_dosen', 'tte_kaprodi', 'tte_kajur'];
+                foreach ($ttes as $tte) {
+                    if ($request->hasFile($tte)) {
+                        if ($rps->$tte) Storage::disk('public')->delete($rps->$tte);
+                        $data[$tte] = $request->file($tte)->store('rps_tte', 'public');
+                    }
                 }
-            }
 
-            $rps->update($data);
+                $rps->update($data);
 
-            $rps->penilaians()->delete();
-            $rps->penilaians()->createMany($validated['penilaians']);
+                $rps->penilaians()->delete();
+                $rps->penilaians()->createMany($validated['penilaians']);
 
-            $rps->details()->delete();
-            $rps->details()->createMany($validated['details']);
-        });
+                $rps->details()->delete();
+                $rps->details()->createMany($validated['details']);
+            });
 
-        return redirect()->route('rps.index')->with('success', 'RPS berhasil diperbarui.');
+            return redirect()->route('rps.index')->with('success', 'RPS berhasil diperbarui.');
+            
+        } catch (\Exception $e) {
+             // 🔥 JEBAKAN ERROR: Memunculkan pesan asli dari sistem/database ke UI
+             return back()->withErrors(['dosen_biodata_id' => 'SISTEM GAGAL UPDATE: ' . $e->getMessage()]);
+        }
     }
 
     // Bypass error huruf "s" dengan memakai $id
@@ -120,12 +132,13 @@ class RpsController extends Controller
 
         return $request->validate([
             'mata_kuliah_id'     => 'required|exists:mata_kuliahs,id',
-            'dosen_biodata_id'   => 'required|exists:dosen_biodatas,id',
+            // 🔥 PERBAIKAN DI SINI: Pakai Rule class agar aman di Multi-Tenant
+            'dosen_biodata_id'   => ['required', Rule::exists(DosenBiodata::class, 'id')],
             'tahun_akademik'     => 'required|string|max:20',
             'tanggal_penyusunan' => 'required|date',
             'pustaka_utama'      => 'required|string',
             'pustaka_pendukung'  => 'nullable|string',
-            'bahan_kajian_utama' => 'required|string', // <-- Validasi Baru
+            'bahan_kajian_utama' => 'required|string',
             'tte_dosen'          => "$tteRule|file|mimes:png,jpg,jpeg,pdf|max:2048",
             'tte_kaprodi'        => "$tteRule|file|mimes:png,jpg,jpeg,pdf|max:2048",
             'tte_kajur'          => "$tteRule|file|mimes:png,jpg,jpeg,pdf|max:2048",
@@ -151,7 +164,8 @@ class RpsController extends Controller
             'details.*.penilaian_bobot'      => 'numeric|min:0|max:100',
         ]);
     }
-// BUKA DI BROWSER (Preview)
+
+    // BUKA DI BROWSER (Preview)
     public function printPdf($id)
     {
         $rps = Rps::with([
@@ -165,9 +179,17 @@ class RpsController extends Controller
             $rps->dosenBiodata = DosenBiodata::find($rps->dosen_biodata_id);
         }
 
-        $pdf = Pdf::loadView('pdf.rps', compact('rps'))->setPaper('a4', 'landscape');
+        $pdf = Pdf::loadView('pdf.rps', compact('rps'))
+            ->setPaper('a4', 'landscape')
+            ->setOptions([
+                'isRemoteEnabled' => true, // 🔥 WAJIB: Biar grafik laba-laba muncul
+                'isHtml5ParserEnabled' => true,
+                'chroot' => [
+                    public_path(),
+                    storage_path('app/public') // 🔥 WAJIB: Biar DomPDF bisa akses folder tenant
+                ],
+            ]);
 
-        // Menggunakan stream() agar terbuka di tab baru
         return $pdf->stream('RPS_' . $rps->mataKuliah->kode_mk . '.pdf');
     }
 
