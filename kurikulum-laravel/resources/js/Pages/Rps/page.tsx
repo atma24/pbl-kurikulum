@@ -3,6 +3,7 @@ import { Head, useForm, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Dialog } from '@headlessui/react';
 import axios from 'axios';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface CPMK { id: number; kode_cpmk: string; deskripsi: string; }
 interface MataKuliah { id: number; kode_mk: string; nama_mk: string; }
@@ -236,6 +237,16 @@ export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], m
         setData('details', d);
     };
 
+    // Format data untuk Recharts
+    const chartData = data.penilaians.map((p, idx) => ({
+        name: cpmks[idx]?.kode_cpmk || `CPMK-${idx + 1}`,
+        Quiz: Number(p.quiz) || 0,
+        Tugas: Number(p.tugas) || 0,
+        Project: Number(p.project) || 0,
+        UTS: Number(p.uts) || 0,
+        UAS: Number(p.uas) || 0,
+    }));
+
     return (
         <AuthenticatedLayout>
             <Head title="Daftar RPS" />
@@ -442,11 +453,36 @@ export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], m
                                             ))}
                                         </tbody>
                                     </table>
+                                    
+                                    {/* GRAFIK PENILAIAN */}
+                                    <div className="mt-6">
+                                        <label className="block text-sm font-bold text-gray-700 mb-2 border-b pb-1">Grafik Distribusi Penilaian</label>
+                                        <div className="w-full h-64 bg-white border border-gray-200 rounded-lg p-4">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart
+                                                    data={chartData}
+                                                    margin={{ top: 5, right: 30, left: -20, bottom: 5 }}
+                                                >
+                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                                    <XAxis dataKey="name" tick={{fontSize: 12}} />
+                                                    <YAxis tick={{fontSize: 12}} />
+                                                    <Tooltip cursor={{fill: '#f3f4f6'}} />
+                                                    <Legend wrapperStyle={{fontSize: '12px'}} />
+                                                    <Bar dataKey="Quiz" stackId="a" fill="#3b82f6" />
+                                                    <Bar dataKey="Tugas" stackId="a" fill="#10b981" />
+                                                    <Bar dataKey="Project" stackId="a" fill="#f59e0b" />
+                                                    <Bar dataKey="UTS" stackId="a" fill="#8b5cf6" />
+                                                    <Bar dataKey="UAS" stackId="a" fill="#ef4444" />
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+
                                 </div>
                             )}
 
                             {/* RENCANA PEMBELAJARAN MINGGUAN */}
-                            <div>
+                            <div className="mt-6">
                                 <label className="block text-sm font-bold text-gray-700 mb-2 border-b pb-1">Rencana Pembelajaran Mingguan</label>
                                 {data.details.map((detail, idx) => (
                                     <div key={idx} className="border border-gray-200 p-3 rounded mb-3 bg-gray-50 relative">
@@ -549,7 +585,7 @@ export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], m
                             </div>
 
                             {/* AKSI TOMBOL */}
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 mt-6">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-lg">Batal</button>
                                 <button type="submit" disabled={processing} className="bg-polman-primary hover:bg-polman-secondary text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm">
                                     {processing ? 'Menyimpan...' : 'Simpan RPS'}
