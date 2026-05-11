@@ -72,7 +72,7 @@ export default function Welcome(_: Props) {
                             <img src="/images/polman-logo.png" alt="POLMAN" className="h-9 w-9 object-contain" />
                         </div>
                         <div className="leading-tight">
-                            <span className="font-black text-aqua-800 text-base tracking-tight font-headline">TRIN Portal</span>
+                            <span className="font-black text-aqua-800 text-base tracking-tight font-headline">IABEE Portal</span>
                             <span className="block text-[10px] text-aqua-600 font-semibold tracking-widest uppercase">POLMAN Bandung</span>
                         </div>
                     </a>
