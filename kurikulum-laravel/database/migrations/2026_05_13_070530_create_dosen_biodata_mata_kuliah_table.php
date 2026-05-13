@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ieas', function (Blueprint $table) {
+        Schema::create('dosen_biodata_mata_kuliah', function (Blueprint $table) {
             $table->id();
-            $table->string('kode')->unique(); // Misal: WA1
-            $table->text('deskripsi')->nullable();
+            $table->unsignedBigInteger('dosen_biodata_id');
+            $table->unsignedBigInteger('mata_kuliah_id');
             $table->timestamps();
         });
     }
@@ -24,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ieas');
+        Schema::dropIfExists('dosen_biodata_mata_kuliah');
     }
 };
