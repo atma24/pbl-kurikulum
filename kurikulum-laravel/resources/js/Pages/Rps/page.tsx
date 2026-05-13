@@ -3,6 +3,10 @@ import { Head, useForm, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Dialog } from '@headlessui/react';
 import axios from 'axios';
+import { 
+    Radar, RadarChart, PolarGrid, PolarAngleAxis, 
+    PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip 
+} from 'recharts';
 
 interface CPMK { id: number; kode_cpmk: string; deskripsi: string; }
 interface MataKuliah { id: number; kode_mk: string; nama_mk: string; }
@@ -209,10 +213,18 @@ export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], m
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Memaksa Inertia mengirim object/array kompleks dengan sempurna
         if (modalMode === 'add') {
-            post(route('rps.store'), { onSuccess: () => setIsModalOpen(false) });
+            post(route('rps.store'), { 
+                forceFormData: true, 
+                onSuccess: () => setIsModalOpen(false) 
+            });
         } else {
-            post(route('rps.update', selectedId!), { onSuccess: () => setIsModalOpen(false) });
+            post(route('rps.update', selectedId!), { 
+                forceFormData: true, 
+                onSuccess: () => setIsModalOpen(false) 
+            });
         }
     };
 
@@ -235,6 +247,16 @@ export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], m
         d[idx].metode_pembelajaran = buildPembelajaran(parsed);
         setData('details', d);
     };
+
+    // Format data untuk Recharts
+    const chartData = data.penilaians.map((p, idx) => ({
+        name: cpmks[idx]?.kode_cpmk || `CPMK-${idx + 1}`,
+        Quiz: Number(p.quiz) || 0,
+        Tugas: Number(p.tugas) || 0,
+        Project: Number(p.project) || 0,
+        UTS: Number(p.uts) || 0,
+        UAS: Number(p.uas) || 0,
+    }));
 
     return (
         <AuthenticatedLayout>
@@ -442,11 +464,35 @@ export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], m
                                             ))}
                                         </tbody>
                                     </table>
+                                    
+                                    {/* GRAFIK PENILAIAN */}
+                                    <div className="mt-6">
+                                        <label className="block text-sm font-bold text-gray-700 mb-2 border-b pb-1">Visualisasi Matriks Penilaian (Spider Chart)</label>
+                                        <div className="w-full h-80 bg-white border border-gray-200 rounded-lg p-4 flex justify-center">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
+                                                    <PolarGrid />
+                                                    <PolarAngleAxis dataKey="name" tick={{fontSize: 12}} />
+                                                    <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{fontSize: 12}} />
+                                                    
+                                                    <Radar name="Quiz" dataKey="Quiz" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.5} />
+                                                    <Radar name="Tugas" dataKey="Tugas" stroke="#10b981" fill="#10b981" fillOpacity={0.5} />
+                                                    <Radar name="Project" dataKey="Project" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.5} />
+                                                    <Radar name="UTS" dataKey="UTS" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.5} />
+                                                    <Radar name="UAS" dataKey="UAS" stroke="#ef4444" fill="#ef4444" fillOpacity={0.5} />
+                                                    
+                                                    <Legend wrapperStyle={{fontSize: '12px'}} />
+                                                    <Tooltip />
+                                                </RadarChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+
                                 </div>
                             )}
 
                             {/* RENCANA PEMBELAJARAN MINGGUAN */}
-                            <div>
+                            <div className="mt-6">
                                 <label className="block text-sm font-bold text-gray-700 mb-2 border-b pb-1">Rencana Pembelajaran Mingguan</label>
                                 {data.details.map((detail, idx) => (
                                     <div key={idx} className="border border-gray-200 p-3 rounded mb-3 bg-gray-50 relative">
@@ -549,7 +595,7 @@ export default function RpsIndex({ rps, mataKuliahs, allDosen }: { rps: Rps[], m
                             </div>
 
                             {/* AKSI TOMBOL */}
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 mt-6">
                                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-lg">Batal</button>
                                 <button type="submit" disabled={processing} className="bg-polman-primary hover:bg-polman-secondary text-white px-5 py-2 rounded-lg text-sm font-bold shadow-sm">
                                     {processing ? 'Menyimpan...' : 'Simpan RPS'}

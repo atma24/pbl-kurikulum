@@ -3,7 +3,6 @@ import { Head, useForm, router, Link, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Dialog } from '@headlessui/react';
 
-
 interface MataKuliah {
     id: number;
     kode_mk: string;
@@ -19,7 +18,6 @@ interface MataKuliah {
 }
 
 export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuliah[] }) {
-    // 1. Injeksi Role dari Inertia Shared Props
     const { roles } = usePage().props.auth as any;
     const isKaprodi = roles?.includes('Kaprodi');
 
@@ -89,7 +87,6 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                     <h2 className="font-headline font-bold text-2xl text-gray-900">Mata Kuliah</h2>
                     <p className="text-gray-500 text-sm font-body mt-1">Kelola data pusaka mata kuliah prodi.</p>
                 </div>
-                {/* 2. Sembunyikan Tombol Tambah untuk Dosen */}
                 {isKaprodi && (
                     <button onClick={openAddModal} className="bg-polman-primary hover:bg-polman-secondary text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-colors">
                         + Tambah Mata Kuliah
@@ -122,7 +119,7 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                                         <div className="text-xs text-gray-500 mt-1">{mk.jenis} • {mk.cara_pembelajaran}</div>
                                         {mk.prasyarat && (
                                             <div className="text-xs text-red-500 mt-1 font-bold">
-                                                Prasyarat: {mk.prasyarat.kode_mk}
+                                                Prasyarat: {mk.prasyarat.nama_mk}
                                             </div>
                                         )}
                                     </td>
@@ -136,19 +133,16 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-3">
-                                            {/* Tombol Kelola CPMK: Bisa dilihat Dosen dan Kaprodi */}
                                             <Link href={`/cpmk/mk/${mk.id}`} className="bg-polman-primary hover:bg-polman-secondary text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors">
                                                 Kelola CPMK
                                             </Link>
                                             
-                                            {/* Tombol Kelola Dosen Pengampu: Hanya Kaprodi */}
                                             {isKaprodi && (
                                                 <Link href={`/mata-kuliah/${mk.id}/dosen-pengampu`} className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors">
                                                     Kelola Dosen
                                                 </Link>
                                             )}
                                             
-                                            {/* 3. Sembunyikan Tombol Edit & Hapus untuk Dosen */}
                                             {isKaprodi && (
                                                 <>
                                                     <button onClick={() => openEditModal(mk)} className="text-blue-600 hover:text-blue-800 font-bold px-2 text-sm transition-colors">Edit</button>
@@ -164,7 +158,6 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                 </table>
             </div>
 
-            {/* Modal di bawah tidak perlu dilindungi isKaprodi karena tombol pemicunya sudah dilindungi */}
             <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} className="relative z-50">
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
                 <div className="fixed inset-0 flex items-center justify-center p-4">
@@ -231,7 +224,7 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                                         {mataKuliahs.map((mkOption) => (
                                             mkOption.id !== selectedId && (
                                                 <option key={mkOption.id} value={mkOption.id}>
-                                                    {mkOption.kode_mk}
+                                                    {mkOption.nama_mk}
                                                 </option>
                                             )
                                         ))}
