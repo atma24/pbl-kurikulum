@@ -164,60 +164,85 @@ class RpsController extends Controller
     }
 
     // BUKA DI BROWSER (Preview)
+// Contoh pada fungsi cetak atau download PDF di RpsController Anda:
+/**
+     * Fungsi untuk mencetak atau melihat preview PDF RPS
+     */
     public function printPdf($id)
     {
+        // 1. Load data RPS beserta relasi yang diperlukan 
+        // Catatan: 'dosenBiodata' tidak dimasukkan di sini karena di model Rps.php dia adalah Accessor, bukan relasi Eloquent standar.
         $rps = Rps::with([
             'mataKuliah.cpmks.indikatorKinerjas.cpl', 
             'penilaians.cpmk', 
             'details',
-            'mataKuliah.prasyarat',
+            'mataKuliah.prasyarat'
         ])->findOrFail($id);
 
+        // 2. Load data Dosen Pengampu secara manual untuk menghindari error relasi
         if ($rps->dosen_biodata_id) {
-            // 🔥 FIX: Pakai snake_case agar terbaca di rps.blade.php
             $rps->dosen_biodata = DosenBiodata::find($rps->dosen_biodata_id);
         }
 
-        $pdf = Pdf::loadView('pdf.rps', compact('rps'))
-            ->setPaper('a4', 'landscape')
+        // ==========================================
+        // 1. LOGIC NAMA DOSEN PENGAMPU
+        // ==========================================
+        $dosen = $rps->dosen_biodata;
+        $namaDosen = $dosen 
+            ? trim(implode(' ', array_filter([$dosen->gelar_depan, $dosen->nama_lengkap, $dosen->gelar_belakang]))) 
+            : '(................................)';
+
+        // ==========================================
+        // 2. LOGIC NAMA KAJUR
+        // Mencari dosen dengan jabatan akademik 'Kajur'
+        // ==========================================
+        $kajur = DosenBiodata::where('jabatan_akademik', 'Kajur')->first();
+        $namaKajur = $kajur 
+            ? trim(implode(' ', array_filter([$kajur->gelar_depan, $kajur->nama_lengkap, $kajur->gelar_belakang]))) 
+            : '(................................)';
+
+        // ==========================================
+        // 3. LOGIC NAMA KAPRODI (DINAMIS)
+        // Alur: Cek prodi_id dosen pengampu -> cari Kaprodi di prodi tersebut
+        // ==========================================
+        $kodeTenant = str_replace('RPS_', '', $rps->kode_dokumen); 
+        
+        $prodiMap = [
+            'RPS_TRIN' => 'Teknologi Rekayasa Informatika Industri',
+            'RPS_TRO'  => 'Teknologi Rekayasa Otomasi',
+            'RPS_TRMO' => 'Teknologi Rekayasa Mekatronika',
+            'RPS_TRSA' => 'Teknologi Rekayasa Sistem Aerial Nirawak',
+        ];
+        // Dapatkan nama panjang prodi-nya
+        $namaProdiLengkap = $prodiMap[$rps->kode_dokumen] ?? '';
+
+        // Query: Cari di tabel dosen_biodatas di mana kolom 'prodi' cocok dengan RPS ini
+        $kaprodi = DosenBiodata::where('jabatan_akademik', 'Kaprodi')
+            ->where(function ($query) use ($kodeTenant, $namaProdiLengkap) {
+                // Mencari langsung ke kolom 'prodi'
+                $query->where('prodi', $namaProdiLengkap)
+                      ->orWhere('prodi', $kodeTenant)
+                      ->orWhere('prodi', 'LIKE', '%' . $kodeTenant . '%');
+            })->first();
+
+        $namaKaprodi = $kaprodi 
+            ? trim(implode(' ', array_filter([$kaprodi->gelar_depan, $kaprodi->nama_lengkap, $kaprodi->gelar_belakang]))) 
+            : '(................................)';
+        // ==========================================
+        // 4. PENGATURAN DAN RENDER PDF
+        // ==========================================
+        $pdf = Pdf::loadView('pdf.rps', compact('rps', 'namaDosen', 'namaKajur', 'namaKaprodi'))
+            ->setPaper('a4', 'landscape') // Menggunakan landscape agar tabel mingguan tidak terpotong
             ->setOptions([
-                'isRemoteEnabled' => true, // 🔥 WAJIB: Biar grafik laba-laba muncul
+                'isRemoteEnabled' => true, // WAJIB: Agar grafik QuickChart bisa muncul
                 'isHtml5ParserEnabled' => true,
                 'chroot' => [
                     public_path(),
-                    storage_path('app/public') // 🔥 WAJIB: Biar bisa baca TTE Tenant
+                    storage_path('app/public') // WAJIB: Agar DomPDF bisa membaca file TTE di storage
                 ],
             ]);
 
+        // Stream untuk preview di browser, atau gunakan download() jika ingin langsung terunduh
         return $pdf->stream('RPS_' . $rps->mataKuliah->kode_mk . '.pdf');
-    }
-
-    // LANGSUNG DOWNLOAD KE LAPTOP
-    public function downloadPdf($id)
-    {
-        $rps = Rps::with([
-            'mataKuliah.cpmks.indikatorKinerjas.cpl', 
-            'penilaians.cpmk', 
-            'details',
-            'mataKuliah.prasyarat',
-        ])->findOrFail($id);
-
-        if ($rps->dosen_biodata_id) {
-            // 🔥 FIX: Pakai snake_case agar terbaca di rps.blade.php
-            $rps->dosen_biodata = DosenBiodata::find($rps->dosen_biodata_id);
-        }
-
-        $pdf = Pdf::loadView('pdf.rps', compact('rps'))
-            ->setPaper('a4', 'landscape')
-            ->setOptions([
-                'isRemoteEnabled' => true, 
-                'isHtml5ParserEnabled' => true,
-                'chroot' => [
-                    public_path(),
-                    storage_path('app/public') 
-                ],
-            ]);
-
-        return $pdf->download('RPS_' . $rps->mataKuliah->kode_mk . '.pdf');
     }
 }
