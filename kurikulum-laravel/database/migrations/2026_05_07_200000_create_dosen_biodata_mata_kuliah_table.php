@@ -15,6 +15,8 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['dosen_biodata_id', 'mata_kuliah_id'], 'dosen_mk_unique');
+            
+            $table->foreign('dosen_biodata_id')->references('id')->on('dosen_biodatas')->cascadeOnDelete();
         });
     }
 
