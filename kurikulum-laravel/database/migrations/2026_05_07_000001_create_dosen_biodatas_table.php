@@ -13,12 +13,12 @@ return new class extends Migration
             $table->string('nama_lengkap');
             $table->string('gelar_depan')->nullable();
             $table->string('gelar_belakang')->nullable();
-            $table->string('nip')->nullable()->unique();
-            $table->string('nidn')->nullable()->unique();
+            $table->string('nip', 50)->nullable()->unique();
+            $table->string('nidn', 50)->nullable()->unique();
             $table->string('email')->unique();
-            $table->string('no_hp')->nullable();
+            $table->string('no_hp', 30)->nullable();
             $table->string('prodi');
-            $table->string('jabatan_akademik');
+            $table->string('jabatan_akademik', 100);
             $table->text('bidang_keahlian')->nullable();
             $table->text('alamat')->nullable();
             $table->timestamps();
