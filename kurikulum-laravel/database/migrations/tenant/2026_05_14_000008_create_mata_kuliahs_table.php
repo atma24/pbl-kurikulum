@@ -13,7 +13,12 @@ return new class extends Migration
             $table->string('kode_mk')->unique();
             $table->string('nama_mk');
             $table->integer('sks');
-            $table->text('deskripsi')->nullable(); // Pusaka penting untuk RPS
+            $table->enum('jenis', ['Teori', 'Praktek'])->default('Teori');
+            $table->text('deskripsi')->nullable();
+            $table->string('semester', 20)->nullable();
+            $table->string('sifat_pengambilan', 50)->nullable();
+            $table->string('cara_pembelajaran', 100)->nullable();
+            $table->foreignId('prasyarat_id')->nullable()->constrained('mata_kuliahs')->onDelete('set null');
             $table->timestamps();
         });
     }

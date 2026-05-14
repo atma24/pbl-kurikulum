@@ -6,24 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('ieas', function (Blueprint $table) {
+        Schema::create('cpmk_indikator_kinerja', function (Blueprint $table) {
             $table->id();
-            $table->string('kode')->unique(); // Misal: WA1
-            $table->text('deskripsi')->nullable();
+            $table->foreignId('cpmk_id')->constrained('cpmks')->onDelete('cascade');
+            $table->foreignId('indikator_kinerja_id')->constrained('indikator_kinerjas')->onDelete('cascade');
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('ieas');
+        Schema::dropIfExists('cpmk_indikator_kinerja');
     }
 };

@@ -6,23 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('cpl_iea', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cpl_id')->constrained('cpls')->onDelete('cascade');
             $table->foreignId('iea_id')->constrained('ieas')->onDelete('cascade');
-            $table->boolean('is_selected')->default(false); // Untuk simpan status centang
+            $table->boolean('is_selected')->default(false);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('cpl_iea');

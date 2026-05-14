@@ -6,12 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('ppms', function (Blueprint $table) {
+        Schema::create('ieas', function (Blueprint $table) {
             $table->id();
             $table->string('kode')->unique();
             $table->text('deskripsi')->nullable();
@@ -19,11 +16,8 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('ppms');
+        Schema::dropIfExists('ieas');
     }
 };

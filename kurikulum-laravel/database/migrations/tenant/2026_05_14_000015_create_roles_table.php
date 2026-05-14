@@ -8,17 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('cpmks', function (Blueprint $table) {
+        Schema::create('roles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('mata_kuliah_id')->constrained('mata_kuliahs')->onDelete('cascade');
-            $table->string('kode_cpmk'); // Contoh: CPMK-1
-            $table->text('deskripsi');
+            $table->string('name');
+            $table->string('guard_name');
             $table->timestamps();
+            
+            $table->unique(['name', 'guard_name']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('cpmks');
+        Schema::dropIfExists('roles');
     }
 };

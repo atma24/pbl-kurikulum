@@ -6,25 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('mk_cpl', function (Blueprint $table) {
+        Schema::create('dosen_biodata_mata_kuliah', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('dosen_biodata_id')->constrained('dosen_biodatas')->onDelete('cascade');
             $table->foreignId('mata_kuliah_id')->constrained('mata_kuliahs')->onDelete('cascade');
-            $table->foreignId('cpl_id')->constrained('cpls')->onDelete('cascade');
-            $table->integer('bobot')->default(0); // Bisa diisi angka 1-4 atau bobot lainnya
             $table->timestamps();
+            
+            $table->unique(['dosen_biodata_id', 'mata_kuliah_id'], 'dosen_mk_unique');
+            $table->index('dosen_biodata_id');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('mk_cpl');
+        Schema::dropIfExists('dosen_biodata_mata_kuliah');
     }
 };

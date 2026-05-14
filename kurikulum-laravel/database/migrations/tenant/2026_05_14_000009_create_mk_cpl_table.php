@@ -8,18 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('indikator_kinerjas', function (Blueprint $table) {
+        Schema::create('mk_cpl', function (Blueprint $table) {
             $table->id();
-            // Jangkar relasional ke tabel CPL
+            $table->foreignId('mata_kuliah_id')->constrained('mata_kuliahs')->onDelete('cascade');
             $table->foreignId('cpl_id')->constrained('cpls')->onDelete('cascade');
-            $table->string('kode')->unique(); // Contoh: A-1, B-2
-            $table->text('deskripsi');
+            $table->integer('bobot')->default(0);
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('indikator_kinerjas');
+        Schema::dropIfExists('mk_cpl');
     }
 };
