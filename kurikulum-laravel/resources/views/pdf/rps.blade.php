@@ -179,7 +179,6 @@
                         
     @if($rps->penilaians->count() > 0)
     @php
-        // Persiapan Data Diagram Radar (Spider Chart)
         $labels = $rps->penilaians->map(fn($p) => $p->cpmk->kode_cpmk ?? 'N/A')->toArray();
         $datasets = [
             ['label' => 'Quiz', 'data' => $rps->penilaians->pluck('quiz')->map(fn($v) => (float)$v)->toArray(), 'borderColor' => '#3b82f6', 'backgroundColor' => 'rgba(59,130,246,0.1)'],
@@ -189,11 +188,16 @@
             ['label' => 'UAS', 'data' => $rps->penilaians->pluck('uas')->map(fn($v) => (float)$v)->toArray(), 'borderColor' => '#ef4444', 'backgroundColor' => 'rgba(239,68,68,0.1)'],
         ];
 
+        $allValues = collect($datasets)->flatMap(fn($ds) => $ds['data'])->filter(fn($v) => $v > 0);
+        $maxValue = $allValues->max() ?? 50;
+        $suggestedMax = $maxValue <= 10 ? 10 : ($maxValue <= 20 ? 20 : ($maxValue <= 50 ? 50 : ceil($maxValue / 10) * 10));
+        $stepSize = $suggestedMax <= 10 ? 2 : ($suggestedMax <= 20 ? 5 : 10);
+
         $chartConfig = [
             'type' => 'radar',
             'data' => ['labels' => $labels, 'datasets' => $datasets],
             'options' => [
-                'scale' => ['ticks' => ['min' => 0, 'max' => 50, 'stepSize' => 10]],
+                'scale' => ['ticks' => ['min' => 0, 'max' => $suggestedMax, 'stepSize' => $stepSize]],
                 'legend' => ['position' => 'bottom', 'labels' => ['fontSize' => 9]]
             ]
         ];
