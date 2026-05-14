@@ -88,65 +88,65 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren<Prop
                         Dashboard
                     </MenuLink>
 
-                    <MenuLink href={route('matrix.index')} active={currentUrl.startsWith('/matrix')} icon="hub">
-                        Curriculum Map
-                    </MenuLink>
-
-                    <MenuLink href={route('rps.index')} active={currentUrl.startsWith('/rps')} icon="description">
-                        Rencana Pembelajaran
+                    <MenuLink href={route('biodata-dosen.index')} active={currentUrl.startsWith('/biodata-dosen')} icon="badge">
+                        Biodata Dosen
                     </MenuLink>
 
                     {isKaprodi && (
-                        <>
-                            <div className="h-px bg-white/5 my-3 mx-4" />
-                            <p className="px-4 text-[10px] uppercase tracking-[0.2em] text-aqua-200/50 font-bold mb-3">Academic Data</p>
-
-                            <MenuLink href={route('biodata-dosen.index')} active={currentUrl.startsWith('/biodata-dosen')} icon="badge">
-                                Biodata Dosen
-                            </MenuLink>
-
-                            <MenuLink href={route('dosen.index')} active={currentUrl.startsWith('/dosen')} icon="group">
-                                Akun Dosen
-                            </MenuLink>
-
-                            <div>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsMasterFolderOpen(!isMasterFolderOpen)}
-                                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all ${
-                                        isMasterDataActive ? 'text-aqua-200' : 'text-white/60 hover:bg-white/5 hover:text-aqua-200'
-                                    }`}
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <MaterialIcon name="database" />
-                                        <span>Master Data</span>
-                                    </div>
-                                    <MaterialIcon
-                                        name="chevron_right"
-                                        className={`text-sm transition-transform ${isMasterFolderOpen ? 'rotate-90' : ''}`}
-                                    />
-                                </button>
-
-                                <div className={`${isMasterFolderOpen ? 'block' : 'hidden'} ml-10 mt-1 space-y-1 border-l border-white/10 pl-3`}>
-                                    <SubMenuLink href={route('mata-kuliah.index')} active={currentUrl.startsWith('/mata-kuliah') || currentUrl.startsWith('/cpmk')}>
-                                        Mata Kuliah
-                                    </SubMenuLink>
-                                    <SubMenuLink href={route('cpl.index')} active={currentUrl.startsWith('/cpl')}>
-                                        Data CPL
-                                    </SubMenuLink>
-                                    <SubMenuLink href={route('ppm.index')} active={currentUrl.startsWith('/ppm')}>
-                                        Data PPM
-                                    </SubMenuLink>
-                                    <SubMenuLink href={route('iea.index')} active={currentUrl.startsWith('/iea')}>
-                                        Data IEA
-                                    </SubMenuLink>
-                                    <SubMenuLink href={route('indikator-kinerja.index')} active={currentUrl.startsWith('/indikator-kinerja')}>
-                                        Indikator Kinerja
-                                    </SubMenuLink>
-                                </div>
-                            </div>
-                        </>
+                        <MenuLink href={route('dosen.index')} active={currentUrl.startsWith('/dosen')} icon="group">
+                            Akun Dosen
+                        </MenuLink>
                     )}
+
+                    <div className="h-px bg-white/5 my-3 mx-4" />
+                    <p className="px-4 text-[10px] uppercase tracking-[0.2em] text-aqua-200/50 font-bold mb-3">Akademik</p>
+
+                    <MenuLink href={route('matrix.index')} active={currentUrl.startsWith('/matrix')} icon="hub">
+                        Curriculum Matrix
+                    </MenuLink>
+
+                    {isKaprodi && (
+                        <div>
+                            <button
+                                type="button"
+                                onClick={() => setIsMasterFolderOpen(!isMasterFolderOpen)}
+                                className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all ${
+                                    isMasterDataActive ? 'text-aqua-200' : 'text-white/60 hover:bg-white/5 hover:text-aqua-200'
+                                }`}
+                            >
+                                <div className="flex items-center gap-4">
+                                    <MaterialIcon name="database" />
+                                    <span>Master Data</span>
+                                </div>
+                                <MaterialIcon
+                                    name="chevron_right"
+                                    className={`text-sm transition-transform ${isMasterFolderOpen ? 'rotate-90' : ''}`}
+                                />
+                            </button>
+
+                            <div className={`${isMasterFolderOpen ? 'block' : 'hidden'} ml-10 mt-1 space-y-1 border-l border-white/10 pl-3`}>
+                                <SubMenuLink href={route('mata-kuliah.index')} active={currentUrl.startsWith('/mata-kuliah') || currentUrl.startsWith('/cpmk')}>
+                                    Mata Kuliah
+                                </SubMenuLink>
+                                <SubMenuLink href={route('cpl.index')} active={currentUrl.startsWith('/cpl')}>
+                                    Data CPL
+                                </SubMenuLink>
+                                <SubMenuLink href={route('ppm.index')} active={currentUrl.startsWith('/ppm')}>
+                                    Data PPM
+                                </SubMenuLink>
+                                <SubMenuLink href={route('iea.index')} active={currentUrl.startsWith('/iea')}>
+                                    Data IEA
+                                </SubMenuLink>
+                                <SubMenuLink href={route('indikator-kinerja.index')} active={currentUrl.startsWith('/indikator-kinerja')}>
+                                    Indikator Kinerja
+                                </SubMenuLink>
+                            </div>
+                        </div>
+                    )}
+
+                    <MenuLink href={route('rps.index')} active={currentUrl.startsWith('/rps')} icon="description">
+                        RPS
+                    </MenuLink>
                 </nav>
 
                 <div className="p-4 border-t border-white/10">
