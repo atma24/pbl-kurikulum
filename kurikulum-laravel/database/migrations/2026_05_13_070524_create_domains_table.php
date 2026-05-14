@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cpl_ppm', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('cpl_id')->constrained('cpls')->onDelete('cascade');
-            $table->foreignId('ppm_id')->constrained('ppms')->onDelete('cascade');
-            $table->boolean('is_selected')->default(false);
+        Schema::create('domains', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('domain')->unique();
+            $table->string('tenant_id');
             $table->timestamps();
+
+            $table->foreign('tenant_id')->references('id')->on('tenants')->onUpdate('cascade')->onDelete('cascade');
         });
     }
 
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cpl_ppm');
+        Schema::dropIfExists('domains');
     }
 };

@@ -12,13 +12,24 @@ export default function UpdateProfileInformation({
     className?: string;
     onSuccess?: () => void;
 }) {
-    // 1. Tarik user dan roles dari shared props (HandleInertiaRequests)
-    const { user, roles } = usePage().props.auth as any;
+    // 1. Tarik user, roles, dan dosenBiodata dari shared props
+    const page = usePage();
+    const { user, roles } = page.props.auth as any;
+    const { dosenBiodata } = page.props as any;
     const roleName = roles?.length > 0 ? roles[0] : 'Dosen';
 
-    // 2. Payload HANYA berisi nama. NIP dan Email dikunci.
+    // 2. Payload dengan semua field yang bisa diedit
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
-        name: user.name,
+        name: user.name || '',
+        email: user.email || '',
+        nip: user.nip || '',
+        gelar_depan: dosenBiodata?.gelar_depan || '',
+        gelar_belakang: dosenBiodata?.gelar_belakang || '',
+        nidn: dosenBiodata?.nidn || '',
+        no_hp: dosenBiodata?.no_hp || '',
+        jabatan_akademik: dosenBiodata?.jabatan_akademik || '',
+        bidang_keahlian: dosenBiodata?.bidang_keahlian || '',
+        alamat: dosenBiodata?.alamat || '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -60,35 +71,9 @@ export default function UpdateProfileInformation({
                     />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {/* Field NIP (Read-Only) */}
-                    <div>
-                        <InputLabel htmlFor="nip" value="NIP (Nomor Induk Pegawai)" className="text-xs uppercase tracking-wider text-gray-500" />
-                        <TextInput
-                            id="nip"
-                            type="text"
-                            className="mt-1 block w-full bg-gray-50 border-gray-200 text-gray-500 cursor-not-allowed font-medium"
-                            value={user.nip || 'Belum Terdaftar'}
-                            disabled
-                        />
-                    </div>
-
-                    {/* Field Email (Read-Only) */}
-                    <div>
-                        <InputLabel htmlFor="email" value="Email Institusi" className="text-xs uppercase tracking-wider text-gray-500" />
-                        <TextInput
-                            id="email"
-                            type="email"
-                            className="mt-1 block w-full bg-gray-50 border-gray-200 text-gray-500 cursor-not-allowed font-medium"
-                            value={user.email}
-                            disabled
-                        />
-                    </div>
-                </div>
-
-                {/* Field Nama (Bisa Diubah) */}
-                <div className="pt-4">
-                    <InputLabel htmlFor="name" value="Nama Lengkap & Gelar Akademik" className="text-xs uppercase tracking-wider text-gray-500" />
+                {/* Nama Lengkap */}
+                <div>
+                    <InputLabel htmlFor="name" value="Nama Lengkap" className="text-xs uppercase tracking-wider text-gray-500" />
                     <TextInput
                         id="name"
                         className="mt-1 block w-full border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-md shadow-sm"
@@ -100,13 +85,140 @@ export default function UpdateProfileInformation({
                     <InputError className="mt-2" message={errors.name} />
                 </div>
 
+                {/* Gelar Depan & Belakang */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <InputLabel htmlFor="gelar_depan" value="Gelar Depan" className="text-xs uppercase tracking-wider text-gray-500" />
+                        <TextInput
+                            id="gelar_depan"
+                            type="text"
+                            className="mt-1 block w-full border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-md shadow-sm"
+                            value={data.gelar_depan}
+                            onChange={(e) => setData('gelar_depan', e.target.value)}
+                            placeholder="Dr., Ir., dll"
+                        />
+                        <InputError className="mt-2" message={errors.gelar_depan} />
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="gelar_belakang" value="Gelar Belakang" className="text-xs uppercase tracking-wider text-gray-500" />
+                        <TextInput
+                            id="gelar_belakang"
+                            type="text"
+                            className="mt-1 block w-full border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-md shadow-sm"
+                            value={data.gelar_belakang}
+                            onChange={(e) => setData('gelar_belakang', e.target.value)}
+                            placeholder="S.T., M.T., Ph.D., dll"
+                        />
+                        <InputError className="mt-2" message={errors.gelar_belakang} />
+                    </div>
+                </div>
+
+                {/* Email & NIP */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <InputLabel htmlFor="email" value="Email Institusi" className="text-xs uppercase tracking-wider text-gray-500" />
+                        <TextInput
+                            id="email"
+                            type="email"
+                            className="mt-1 block w-full border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-md shadow-sm"
+                            value={data.email}
+                            onChange={(e) => setData('email', e.target.value)}
+                            required
+                        />
+                        <InputError className="mt-2" message={errors.email} />
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="nip" value="NIP (Nomor Induk Pegawai)" className="text-xs uppercase tracking-wider text-gray-500" />
+                        <TextInput
+                            id="nip"
+                            type="text"
+                            className="mt-1 block w-full border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-md shadow-sm"
+                            value={data.nip}
+                            onChange={(e) => setData('nip', e.target.value)}
+                        />
+                        <InputError className="mt-2" message={errors.nip} />
+                    </div>
+                </div>
+
+                {/* NIDN & No HP */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <InputLabel htmlFor="nidn" value="NIDN (Nomor Induk Dosen Nasional)" className="text-xs uppercase tracking-wider text-gray-500" />
+                        <TextInput
+                            id="nidn"
+                            type="text"
+                            className="mt-1 block w-full border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-md shadow-sm"
+                            value={data.nidn}
+                            onChange={(e) => setData('nidn', e.target.value)}
+                        />
+                        <InputError className="mt-2" message={errors.nidn} />
+                    </div>
+
+                    <div>
+                        <InputLabel htmlFor="no_hp" value="No. HP / WhatsApp" className="text-xs uppercase tracking-wider text-gray-500" />
+                        <TextInput
+                            id="no_hp"
+                            type="text"
+                            className="mt-1 block w-full border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-md shadow-sm"
+                            value={data.no_hp}
+                            onChange={(e) => setData('no_hp', e.target.value)}
+                            placeholder="08xxxxxxxxxx"
+                        />
+                        <InputError className="mt-2" message={errors.no_hp} />
+                    </div>
+                </div>
+
+                {/* Jabatan Akademik */}
+                <div>
+                    <InputLabel htmlFor="jabatan_akademik" value="Jabatan Akademik" className="text-xs uppercase tracking-wider text-gray-500" />
+                    <TextInput
+                        id="jabatan_akademik"
+                        type="text"
+                        className="mt-1 block w-full border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-md shadow-sm"
+                        value={data.jabatan_akademik}
+                        onChange={(e) => setData('jabatan_akademik', e.target.value)}
+                        placeholder="Lektor, Asisten Ahli, dll"
+                    />
+                    <InputError className="mt-2" message={errors.jabatan_akademik} />
+                </div>
+
+                {/* Bidang Keahlian */}
+                <div>
+                    <InputLabel htmlFor="bidang_keahlian" value="Bidang Keahlian" className="text-xs uppercase tracking-wider text-gray-500" />
+                    <textarea
+                        id="bidang_keahlian"
+                        className="mt-1 block w-full border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-md shadow-sm"
+                        value={data.bidang_keahlian}
+                        onChange={(e) => setData('bidang_keahlian', e.target.value)}
+                        rows={3}
+                        placeholder="Contoh: Rekayasa Perangkat Lunak, Machine Learning, IoT"
+                    />
+                    <InputError className="mt-2" message={errors.bidang_keahlian} />
+                </div>
+
+                {/* Alamat */}
+                <div>
+                    <InputLabel htmlFor="alamat" value="Alamat Lengkap" className="text-xs uppercase tracking-wider text-gray-500" />
+                    <textarea
+                        id="alamat"
+                        className="mt-1 block w-full border-gray-300 focus:border-teal-500 focus:ring-teal-500 rounded-md shadow-sm"
+                        value={data.alamat}
+                        onChange={(e) => setData('alamat', e.target.value)}
+                        rows={3}
+                        placeholder="Alamat lengkap tempat tinggal"
+                    />
+                    <InputError className="mt-2" message={errors.alamat} />
+                </div>
+
                 <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
                     <button 
                         type="submit" 
                         disabled={processing}
                         className="inline-flex items-center px-4 py-2 bg-teal-600 border border-transparent rounded-md font-bold text-xs text-white uppercase tracking-widest hover:bg-teal-700 focus:bg-teal-700 active:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition ease-in-out duration-150 shadow-sm"
                     >
-                        {processing ? 'Menyimpan...' : 'Simpan Perubahan Nama'}
+                        {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
                     </button>
 
                     <Transition

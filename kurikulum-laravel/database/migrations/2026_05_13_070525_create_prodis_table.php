@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('cpl_iea', function (Blueprint $table) {
+        Schema::create('prodis', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cpl_id')->constrained('cpls')->onDelete('cascade');
-            $table->foreignId('iea_id')->constrained('ieas')->onDelete('cascade');
-            $table->boolean('is_selected')->default(false); // Untuk simpan status centang
+            $table->string('kode');
+            $table->string('nama');
+            $table->string('tenant_id')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cpl_iea');
+        Schema::dropIfExists('prodis');
     }
 };

@@ -9,11 +9,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('jabatan')->nullable();
-            $table->string('signature_path')->nullable();
+        Schema::create('tenants', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->timestamps();
+            $table->json('data')->nullable();
         });
     }
 
@@ -22,8 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('tenants');
     }
 };
