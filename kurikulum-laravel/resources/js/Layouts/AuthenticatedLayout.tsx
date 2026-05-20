@@ -88,9 +88,11 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren<Prop
                         Dashboard
                     </MenuLink>
 
-                    <MenuLink href={route('biodata-dosen.index')} active={currentUrl.startsWith('/biodata-dosen')} icon="badge">
-                        Biodata Dosen
-                    </MenuLink>
+                    {isKaprodi && (
+                        <MenuLink href={route('biodata-dosen.index')} active={currentUrl.startsWith('/biodata-dosen')} icon="badge">
+                            Biodata Dosen
+                        </MenuLink>
+                    )}
 
                     {isKaprodi && (
                         <MenuLink href={route('dosen.index')} active={currentUrl.startsWith('/dosen')} icon="group">
@@ -103,6 +105,10 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren<Prop
 
                     <MenuLink href={route('matrix.index')} active={currentUrl.startsWith('/matrix')} icon="hub">
                         Curriculum Matrix
+                    </MenuLink>
+                    
+                    <MenuLink href={route('mata-kuliah.index')} active={currentUrl.startsWith('/mata-kuliah') || currentUrl.startsWith('/cpmk')} icon="school">
+                        Mata Kuliah
                     </MenuLink>
 
                     {isKaprodi && (
@@ -125,9 +131,6 @@ export default function AuthenticatedLayout({ children }: PropsWithChildren<Prop
                             </button>
 
                             <div className={`${isMasterFolderOpen ? 'block' : 'hidden'} ml-10 mt-1 space-y-1 border-l border-white/10 pl-3`}>
-                                <SubMenuLink href={route('mata-kuliah.index')} active={currentUrl.startsWith('/mata-kuliah') || currentUrl.startsWith('/cpmk')}>
-                                    Mata Kuliah
-                                </SubMenuLink>
                                 <SubMenuLink href={route('cpl.index')} active={currentUrl.startsWith('/cpl')}>
                                     Data CPL
                                 </SubMenuLink>

@@ -47,7 +47,13 @@ class MataKuliah extends Model
     // Relasi ke Dosen Pengampu (Many-to-Many via pivot)
     public function dosenPengampus()
     {
-        return $this->belongsToMany(DosenBiodata::class, 'dosen_biodata_mata_kuliah', 'mata_kuliah_id', 'dosen_biodata_id')
-                    ->withTimestamps();
+        return $this->belongsToMany(
+            DosenBiodata::class, 
+            'dosen_biodata_mata_kuliah', 
+            'mata_kuliah_id', 
+            'dosen_biodata_id'
+        )
+        ->using(\Illuminate\Database\Eloquent\Relations\Pivot::class)
+        ->withTimestamps();
     }
 }

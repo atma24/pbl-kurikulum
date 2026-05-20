@@ -31,6 +31,19 @@ Route::middleware([
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+        
+        // Debug route - remove after testing
+        Route::get('/debug-role', function() {
+            $user = auth()->user();
+            return response()->json([
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'roles' => $user->getRoleNames(),
+                'has_kaprodi' => $user->hasRole('Kaprodi'),
+                'has_dosen' => $user->hasRole('Dosen'),
+            ]);
+        });
     });
 
     Route::middleware(['auth', 'role:Kaprodi|Dosen'])->group(function () {
@@ -38,17 +51,21 @@ Route::middleware([
         Route::get('/rps/{id}/pdf', [RpsController::class, 'printPdf'])->name('rps.pdf');
         Route::get('/rps/{id}/download', [RpsController::class, 'downloadPdf'])->name('rps.download');
         Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix.index');
+        
+        Route::get('/mata-kuliah', [MataKuliahController::class, 'index'])->name('mata-kuliah.index');
+        Route::get('/mata-kuliah/{id}/dosen-pengampu', [MataKuliahController::class, 'dosenPengampu'])->name('mata-kuliah.dosen-pengampu');
     });
 
     Route::middleware(['auth', 'role:Kaprodi'])->group(function () {
-        Route::resource('mata-kuliah', MataKuliahController::class)->except(['create', 'show', 'edit']);
+        Route::post('/mata-kuliah', [MataKuliahController::class, 'store'])->name('mata-kuliah.store');
+        Route::patch('/mata-kuliah/{mataKuliah}', [MataKuliahController::class, 'update'])->name('mata-kuliah.update');
+        Route::delete('/mata-kuliah/{mataKuliah}', [MataKuliahController::class, 'destroy'])->name('mata-kuliah.destroy');
         Route::get('/mata-kuliah/{id}/rps-data', [MataKuliahController::class, 'apiGetRpsData'])->name('mata-kuliah.rps-data');
 
         Route::resource('biodata-dosen', DosenBiodataController::class)
             ->parameters(['biodata-dosen' => 'dosenBiodata'])
             ->only(['index', 'store', 'update', 'destroy']);
 
-        Route::get('/mata-kuliah/{id}/dosen-pengampu', [MataKuliahController::class, 'dosenPengampu'])->name('mata-kuliah.dosen-pengampu');
         Route::post('/mata-kuliah/{id}/dosen-pengampu', [MataKuliahController::class, 'attachDosen'])->name('mata-kuliah.attach-dosen');
         Route::delete('/mata-kuliah/{mkId}/dosen-pengampu/{dosenId}', [MataKuliahController::class, 'detachDosen'])->name('mata-kuliah.detach-dosen');
 
