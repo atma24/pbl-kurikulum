@@ -20,13 +20,12 @@ class RpsController extends Controller
         
         $rps->each(function ($item) {
             if ($item->dosen_biodata_id) {
-                // 🔥 FIX: Pakai snake_case agar terbaca di page.tsx React
-                $item->dosen_biodata = DosenBiodata::find($item->dosen_biodata_id);
+                $item->dosen_biodata = DosenBiodata::on('central')->find($item->dosen_biodata_id);
             }
         });
         
         $mataKuliahs = MataKuliah::select('id', 'kode_mk', 'nama_mk')->get();
-        $allDosen = DosenBiodata::orderBy('nama_lengkap')->get();
+        $allDosen = DosenBiodata::on('central')->orderBy('nama_lengkap')->get();
 
         return Inertia::render('Rps/page', [
             'rps' => $rps,
@@ -181,7 +180,7 @@ class RpsController extends Controller
 
         // 2. Load data Dosen Pengampu secara manual untuk menghindari error relasi
         if ($rps->dosen_biodata_id) {
-            $rps->dosen_biodata = DosenBiodata::find($rps->dosen_biodata_id);
+            $rps->dosen_biodata = DosenBiodata::on('central')->find($rps->dosen_biodata_id);
         }
 
         // ==========================================
@@ -196,7 +195,7 @@ class RpsController extends Controller
         // 2. LOGIC NAMA KAJUR
         // Mencari dosen dengan jabatan akademik 'Kajur'
         // ==========================================
-        $kajur = DosenBiodata::where('jabatan_akademik', 'Kajur')->first();
+        $kajur = DosenBiodata::on('central')->where('jabatan_akademik', 'Kajur')->first();
         $namaKajur = $kajur 
             ? trim(implode(' ', array_filter([$kajur->gelar_depan, $kajur->nama_lengkap, $kajur->gelar_belakang]))) 
             : '(................................)';
@@ -217,9 +216,8 @@ class RpsController extends Controller
         $namaProdiLengkap = $prodiMap[$rps->kode_dokumen] ?? '';
 
         // Query: Cari di tabel dosen_biodatas di mana kolom 'prodi' cocok dengan RPS ini
-        $kaprodi = DosenBiodata::where('jabatan_akademik', 'Kaprodi')
+        $kaprodi = DosenBiodata::on('central')->where('jabatan_akademik', 'Kaprodi')
             ->where(function ($query) use ($kodeTenant, $namaProdiLengkap) {
-                // Mencari langsung ke kolom 'prodi'
                 $query->where('prodi', $namaProdiLengkap)
                       ->orWhere('prodi', $kodeTenant)
                       ->orWhere('prodi', 'LIKE', '%' . $kodeTenant . '%');

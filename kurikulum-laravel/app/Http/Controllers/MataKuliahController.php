@@ -88,8 +88,21 @@ class MataKuliahController extends Controller
         $mataKuliah = MataKuliah::with([
             'cpls.indikatorKinerjas', 
             'cpmks.indikatorKinerjas',
-            'dosenPengampus',
         ])->findOrFail($id);
+
+        // Manually fetch dosen pengampus from central database
+        $dosenIds = \DB::table('dosen_biodata_mata_kuliah')
+            ->where('mata_kuliah_id', $id)
+            ->pluck('dosen_biodata_id');
+        
+        $dosenPengampus = [];
+        if ($dosenIds->isNotEmpty()) {
+            $dosenPengampus = DosenBiodata::on('central')
+                ->whereIn('id', $dosenIds)
+                ->get();
+        }
+        
+        $mataKuliah->dosen_pengampus = $dosenPengampus;
 
         return response()->json([
             'status' => 'success',
@@ -99,31 +112,75 @@ class MataKuliahController extends Controller
 
     /**
      * Halaman Kelola Dosen Pengampu per Mata Kuliah
+     * Role-based: Kaprodi sees full management, Dosen sees self-management modal
      */
     public function dosenPengampu($id)
     {
-        $mk = MataKuliah::with('dosenPengampus')->findOrFail($id);
-        $allDosen = DosenBiodata::orderBy('nama_lengkap')->get();
+        $user = auth()->user();
+        $mk = MataKuliah::findOrFail($id);
+        
+        // Manually fetch dosen pengampus from central database
+        $dosenIds = \DB::table('dosen_biodata_mata_kuliah')
+            ->where('mata_kuliah_id', $id)
+            ->pluck('dosen_biodata_id');
+        
+        $assignedDosen = [];
+        if ($dosenIds->isNotEmpty()) {
+            $assignedDosen = DosenBiodata::on('central')
+                ->whereIn('id', $dosenIds)
+                ->get();
+        }
+        
+        if ($user->hasRole('Dosen')) {
+            $dosenBiodata = $user->dosenBiodata;
+            
+            if (!$dosenBiodata) {
+                return back()->withErrors(['error' => 'Akun Anda belum terhubung dengan biodata dosen.']);
+            }
+            
+            $isAssigned = $dosenIds->contains($dosenBiodata->id);
+            
+            return Inertia::render('MataKuliah/page', [
+                'mataKuliahs' => MataKuliah::with('prasyarat')->get(),
+                'showSelfManagementModal' => true,
+                'selfManagementData' => [
+                    'mataKuliah' => $mk,
+                    'dosenBiodata' => $dosenBiodata,
+                    'isAssigned' => $isAssigned,
+                ],
+            ]);
+        }
+        
+        $allDosen = DosenBiodata::on('central')->orderBy('nama_lengkap')->get();
 
         return Inertia::render('MataKuliah/DosenPengampu', [
             'mataKuliah' => $mk,
-            'assignedDosen' => $mk->dosenPengampus,
+            'assignedDosen' => $assignedDosen,
             'allDosen' => $allDosen,
         ]);
     }
 
     /**
-     * Assign dosen pengampu ke Mata Kuliah
-     */
-/**
-     * Assign dosen pengampu ke Mata Kuliah
+     * Assign dosen pengampu ke Mata Kuliah (Kaprodi or Dosen self-add)
      */
     public function attachDosen(Request $request, $id)
     {
+        $user = auth()->user();
         $mk = MataKuliah::findOrFail($id);
 
+        if ($user->hasRole('Dosen')) {
+            $dosenBiodata = $user->dosenBiodata;
+            
+            if (!$dosenBiodata) {
+                return back()->withErrors(['error' => 'Akun Anda belum terhubung dengan biodata dosen.']);
+            }
+            
+            $mk->dosenPengampus()->syncWithoutDetaching([$dosenBiodata->id]);
+            
+            return redirect()->route('mata-kuliah.index')->with('success', 'Anda berhasil ditambahkan sebagai dosen pengampu.');
+        }
+
         $validated = $request->validate([
-            // Format validasi Laravel: exists:nama_koneksi.nama_tabel,kolom
             'dosen_biodata_id' => 'required|exists:central.dosen_biodatas,id',
         ]);
 
@@ -133,11 +190,29 @@ class MataKuliahController extends Controller
     }
 
     /**
-     * Hapus dosen pengampu dari Mata Kuliah
+     * Hapus dosen pengampu dari Mata Kuliah (Kaprodi or Dosen self-remove)
      */
     public function detachDosen($mkId, $dosenId)
     {
+        $user = auth()->user();
         $mk = MataKuliah::findOrFail($mkId);
+        
+        if ($user->hasRole('Dosen')) {
+            $dosenBiodata = $user->dosenBiodata;
+            
+            if (!$dosenBiodata) {
+                return back()->withErrors(['error' => 'Akun Anda belum terhubung dengan biodata dosen.']);
+            }
+            
+            if ($dosenId != $dosenBiodata->id) {
+                return back()->withErrors(['error' => 'Anda hanya dapat menghapus diri sendiri.']);
+            }
+            
+            $mk->dosenPengampus()->detach($dosenBiodata->id);
+            
+            return redirect()->route('mata-kuliah.index')->with('success', 'Anda berhasil dihapus dari dosen pengampu.');
+        }
+
         $mk->dosenPengampus()->detach($dosenId);
 
         return redirect()->back()->with('success', 'Dosen pengampu berhasil dihapus.');

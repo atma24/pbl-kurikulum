@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, useForm, router, Link, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Dialog } from '@headlessui/react';
@@ -17,13 +17,42 @@ interface MataKuliah {
     prasyarat?: { kode_mk: string; nama_mk: string } | null;
 }
 
-export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuliah[] }) {
+interface DosenBiodata {
+    id: number;
+    nama_lengkap: string;
+    gelar_depan: string | null;
+    gelar_belakang: string | null;
+    nip: string;
+}
+
+interface SelfManagementData {
+    mataKuliah: MataKuliah;
+    dosenBiodata: DosenBiodata;
+    isAssigned: boolean;
+}
+
+interface Props {
+    mataKuliahs: MataKuliah[];
+    showSelfManagementModal?: boolean;
+    selfManagementData?: SelfManagementData;
+}
+
+export default function MataKuliahIndex({ mataKuliahs, showSelfManagementModal, selfManagementData }: Props) {
     const { roles } = usePage().props.auth as any;
     const isKaprodi = roles?.includes('Kaprodi');
+    const isDosen = roles?.includes('Dosen');
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
     const [selectedId, setSelectedId] = useState<number | null>(null);
+    
+    const [isSelfManagementModalOpen, setIsSelfManagementModalOpen] = useState(false);
+
+    useEffect(() => {
+        if (showSelfManagementModal && selfManagementData) {
+            setIsSelfManagementModalOpen(true);
+        }
+    }, [showSelfManagementModal, selfManagementData]);
 
     const { data, setData, post, patch, reset, processing, errors, clearErrors } = useForm({
         kode_mk: '',
@@ -78,6 +107,29 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
         if (modalMode === 'add') post('/mata-kuliah', { onSuccess: () => setIsModalOpen(false) });
         else patch(`/mata-kuliah/${selectedId}`, { onSuccess: () => setIsModalOpen(false) });
     };
+    
+    const handleSelfManagementToggle = () => {
+        if (!selfManagementData) return;
+        
+        const { mataKuliah, isAssigned } = selfManagementData;
+        
+        if (isAssigned) {
+            if (confirm(`Hapus diri Anda dari dosen pengampu ${mataKuliah.kode_mk}?`)) {
+                router.delete(`/mata-kuliah/${mataKuliah.id}/dosen-pengampu/${selfManagementData.dosenBiodata.id}`, {
+                    onSuccess: () => setIsSelfManagementModalOpen(false)
+                });
+            }
+        } else {
+            if (confirm(`Tambahkan diri Anda sebagai dosen pengampu ${mataKuliah.kode_mk}?`)) {
+                router.post(`/mata-kuliah/${mataKuliah.id}/dosen-pengampu`, {}, {
+                    onSuccess: () => setIsSelfManagementModalOpen(false)
+                });
+            }
+        }
+    };
+    
+    const fullName = (d: DosenBiodata) =>
+        [d.gelar_depan, d.nama_lengkap, d.gelar_belakang].filter(Boolean).join(' ');
 
     return (
         <AuthenticatedLayout>
@@ -133,21 +185,25 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-3">
-                                            <Link href={`/cpmk/mk/${mk.id}`} className="bg-polman-primary hover:bg-polman-secondary text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors">
-                                                Kelola CPMK
-                                            </Link>
-                                            
-                                            {isKaprodi && (
-                                                <Link href={`/mata-kuliah/${mk.id}/dosen-pengampu`} className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors">
-                                                    Kelola Dosen
-                                                </Link>
-                                            )}
-                                            
                                             {isKaprodi && (
                                                 <>
+                                                    <Link href={`/cpmk/mk/${mk.id}`} className="bg-polman-primary hover:bg-polman-secondary text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors">
+                                                        Kelola CPMK
+                                                    </Link>
+                                                    
+                                                    <Link href={`/mata-kuliah/${mk.id}/dosen-pengampu`} className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors">
+                                                        Kelola Dosen
+                                                    </Link>
+                                                    
                                                     <button onClick={() => openEditModal(mk)} className="text-blue-600 hover:text-blue-800 font-bold px-2 text-sm transition-colors">Edit</button>
                                                     <button onClick={() => { if (confirm(`Hapus MK ${mk.kode_mk}?`)) router.delete(`/mata-kuliah/${mk.id}`); }} className="text-red-500 hover:text-red-700 font-bold px-2 text-sm transition-colors">Hapus</button>
                                                 </>
+                                            )}
+                                            
+                                            {isDosen && (
+                                                <Link href={`/mata-kuliah/${mk.id}/dosen-pengampu`} className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors">
+                                                    Kelola Diri Sendiri
+                                                </Link>
                                             )}
                                         </div>
                                     </td>
@@ -246,6 +302,73 @@ export default function MataKuliahIndex({ mataKuliahs }: { mataKuliahs: MataKuli
                     </Dialog.Panel>
                 </div>
             </Dialog>
+
+            {/* MODAL SELF-MANAGEMENT FOR DOSEN */}
+            {selfManagementData && (
+                <Dialog open={isSelfManagementModalOpen} onClose={() => setIsSelfManagementModalOpen(false)} className="relative z-50">
+                    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" aria-hidden="true" />
+                    <div className="fixed inset-0 flex items-center justify-center p-4">
+                        <Dialog.Panel className="bg-white p-6 rounded-2xl w-full max-w-md shadow-2xl font-body">
+                            <Dialog.Title className="text-xl font-bold text-gray-900 mb-4">Kelola Diri Sendiri</Dialog.Title>
+                            
+                            <div className="space-y-4">
+                                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                                    <h3 className="font-bold text-sm text-gray-700 mb-2">Mata Kuliah</h3>
+                                    <p className="text-sm font-bold text-polman-primary">{selfManagementData.mataKuliah.kode_mk}</p>
+                                    <p className="text-sm text-gray-800">{selfManagementData.mataKuliah.nama_mk}</p>
+                                </div>
+
+                                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                                    <h3 className="font-bold text-sm text-gray-700 mb-2">Informasi Dosen</h3>
+                                    <p className="text-sm font-bold text-gray-900">{fullName(selfManagementData.dosenBiodata)}</p>
+                                    <p className="text-xs text-gray-500 mt-1">NIP: {selfManagementData.dosenBiodata.nip}</p>
+                                </div>
+
+                                <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                                    <div className="flex-shrink-0">
+                                        {selfManagementData.isAssigned ? (
+                                            <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-gray-900">Status</p>
+                                        <p className="text-xs text-gray-600">
+                                            {selfManagementData.isAssigned 
+                                                ? 'Anda terdaftar sebagai dosen pengampu' 
+                                                : 'Anda belum terdaftar sebagai dosen pengampu'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+                                <button 
+                                    onClick={() => setIsSelfManagementModalOpen(false)} 
+                                    className="px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={handleSelfManagementToggle}
+                                    className={`px-5 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors ${
+                                        selfManagementData.isAssigned
+                                            ? 'bg-red-600 hover:bg-red-700 text-white'
+                                            : 'bg-green-600 hover:bg-green-700 text-white'
+                                    }`}
+                                >
+                                    {selfManagementData.isAssigned ? 'Hapus Diri Sendiri' : 'Tambahkan Diri Sendiri'}
+                                </button>
+                            </div>
+                        </Dialog.Panel>
+                    </div>
+                </Dialog>
+            )}
         </AuthenticatedLayout>
     );
 }
