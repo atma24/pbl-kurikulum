@@ -14,8 +14,6 @@ return new class extends Migration
             $table->string('nama');
             $table->string('tenant_id')->nullable()->index();
             $table->timestamps();
-
-            $table->foreign('tenant_id')->references('id')->on('tenants')->onUpdate('cascade')->onDelete('set null');
         });
     }
 

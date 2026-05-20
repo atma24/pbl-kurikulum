@@ -10,9 +10,11 @@ return new class extends Migration
     {
         Schema::create('cpmk_indikator_kinerja', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cpmk_id')->constrained('cpmks')->onDelete('cascade');
-            $table->foreignId('indikator_kinerja_id')->constrained('indikator_kinerjas')->onDelete('cascade');
+            $table->foreignId('cpmk_id');
+            $table->foreignId('indikator_kinerja_id');
             $table->timestamps();
+            $table->foreign('cpmk_id')->references('id')->on('cpmks')->onDelete('cascade');
+            $table->foreign('indikator_kinerja_id')->references('id')->on('indikator_kinerjas')->onDelete('cascade');
         });
     }
 

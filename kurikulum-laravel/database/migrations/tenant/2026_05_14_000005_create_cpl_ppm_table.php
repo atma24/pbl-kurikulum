@@ -10,10 +10,12 @@ return new class extends Migration
     {
         Schema::create('cpl_ppm', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cpl_id')->constrained('cpls')->onDelete('cascade');
-            $table->foreignId('ppm_id')->constrained('ppms')->onDelete('cascade');
+            $table->foreignId('cpl_id');
+            $table->foreignId('ppm_id');
             $table->boolean('is_selected')->default(false);
             $table->timestamps();
+            $table->foreign('cpl_id')->references('id')->on('cpls')->onDelete('cascade');
+            $table->foreign('ppm_id')->references('id')->on('ppms')->onDelete('cascade');
         });
     }
 

@@ -10,17 +10,15 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('dosen_biodata_id')->nullable()->constrained('dosen_biodatas')->onDelete('set null');
+            $table->foreignId('dosen_biodata_id')->nullable()->index();
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->rememberToken();
             $table->string('jabatan')->nullable();
             $table->string('nip')->nullable();
-            $table->rememberToken();
             $table->timestamps();
-            
-            $table->index('dosen_biodata_id');
         });
     }
 

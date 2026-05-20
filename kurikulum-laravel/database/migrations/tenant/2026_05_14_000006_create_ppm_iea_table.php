@@ -10,10 +10,12 @@ return new class extends Migration
     {
         Schema::create('ppm_iea', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('ppm_id')->constrained('ppms')->onDelete('cascade');
-            $table->foreignId('iea_id')->constrained('ieas')->onDelete('cascade');
+            $table->foreignId('ppm_id');
+            $table->foreignId('iea_id');
             $table->boolean('is_selected')->default(false);
             $table->timestamps();
+            $table->foreign('ppm_id')->references('id')->on('ppms')->onDelete('cascade');
+            $table->foreign('iea_id')->references('id')->on('ieas')->onDelete('cascade');
         });
     }
 

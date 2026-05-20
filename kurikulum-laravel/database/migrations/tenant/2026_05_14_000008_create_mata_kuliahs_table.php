@@ -18,8 +18,9 @@ return new class extends Migration
             $table->string('semester', 20)->nullable();
             $table->string('sifat_pengambilan', 50)->nullable();
             $table->string('cara_pembelajaran', 100)->nullable();
-            $table->foreignId('prasyarat_id')->nullable()->constrained('mata_kuliahs')->onDelete('set null');
+            $table->foreignId('prasyarat_id')->nullable();
             $table->timestamps();
+            $table->foreign('prasyarat_id')->references('id')->on('mata_kuliahs')->onDelete('set null');
         });
     }
 

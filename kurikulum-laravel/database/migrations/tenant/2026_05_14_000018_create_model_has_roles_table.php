@@ -9,12 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('model_has_roles', function (Blueprint $table) {
-            $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
+            $table->foreignId('role_id');
             $table->string('model_type');
-            $table->unsignedBigInteger('model_id');
-            
+            $table->foreignId('model_id');
             $table->primary(['role_id', 'model_id', 'model_type']);
-            $table->index(['model_id', 'model_type']);
+            $table->index(['model_id', 'model_type'], 'model_has_roles_model_id_model_type_index');
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('cascade');
         });
     }
 

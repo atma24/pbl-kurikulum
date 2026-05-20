@@ -10,20 +10,19 @@ return new class extends Migration
     {
         Schema::create('rps', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('mata_kuliah_id')->constrained('mata_kuliahs')->onDelete('cascade');
-            $table->foreignId('dosen_biodata_id')->nullable()->constrained('dosen_biodatas')->onDelete('set null');
+            $table->foreignId('mata_kuliah_id');
+            $table->foreignId('dosen_biodata_id')->nullable()->index();
             $table->string('tahun_akademik', 20);
-            $table->string('kode_dokumen')->nullable();
+            $table->string('kode_dokumen', 255)->nullable();
             $table->date('tanggal_penyusunan');
             $table->text('pustaka_utama');
             $table->text('pustaka_pendukung')->nullable();
             $table->text('bahan_kajian_utama')->nullable();
-            $table->string('tte_dosen')->nullable();
-            $table->string('tte_kaprodi')->nullable();
-            $table->string('tte_kajur')->nullable();
+            $table->string('tte_dosen', 255)->nullable();
+            $table->string('tte_kaprodi', 255)->nullable();
+            $table->string('tte_kajur', 255)->nullable();
             $table->timestamps();
-            
-            $table->index('dosen_biodata_id');
+            $table->foreign('mata_kuliah_id')->references('id')->on('mata_kuliahs')->onDelete('cascade');
         });
     }
 

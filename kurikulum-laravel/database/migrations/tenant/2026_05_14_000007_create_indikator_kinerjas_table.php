@@ -10,10 +10,11 @@ return new class extends Migration
     {
         Schema::create('indikator_kinerjas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cpl_id')->constrained('cpls')->onDelete('cascade');
+            $table->foreignId('cpl_id');
             $table->string('kode')->unique();
             $table->text('deskripsi');
             $table->timestamps();
+            $table->foreign('cpl_id')->references('id')->on('cpls')->onDelete('cascade');
         });
     }
 
