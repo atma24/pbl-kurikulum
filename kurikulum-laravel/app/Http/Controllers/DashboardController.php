@@ -10,6 +10,7 @@ use App\Models\Rps;
 use App\Models\DosenBiodata;
 use Illuminate\Support\Facades\DB;
 
+
 class DashboardController extends Controller
 {
     public function index()
@@ -127,7 +128,85 @@ class DashboardController extends Controller
 
     private function dosenDashboard($user)
     {
-        // Use the same dashboard as Kaprodi
-        return $this->kaprodiDashboard($user);
+        $shortcuts = [
+            [
+                'label'       => 'Kelola RPS',
+                'href'        => route('rps.index'),
+                'description' => 'Buat dan kelola Rencana Pembelajaran Semester',
+            ],
+            [
+                'label'       => 'Mata Kuliah',
+                'href'        => route('mata-kuliah.index'),
+                'description' => 'Lihat dan ampu mata kuliah',
+            ],
+            [
+                'label'       => 'Curriculum Map',
+                'href'        => route('matrix.index'),
+                'description' => 'Lihat matriks CPL-MK-IEA-PPM',
+            ],
+        ];
+
+        $dosenBiodata = $user->dosenBiodata;
+
+        // Handle: user dosen yang belum terhubung dengan biodata dosen
+        if (!$dosenBiodata) {
+            return Inertia::render('Dashboard', [
+                'dashboardRole' => 'dosen',
+                'stats' => [
+                    'mk_diampu'         => 0,
+                    'rps_saya'          => 0,
+                    'cpmk_terkait'      => 0,
+                    'rps_perlu_lengkap' => 0,
+                ],
+                'items'     => [],
+                'shortcuts' => $shortcuts,
+                'warning'   => 'Akun Anda belum terhubung dengan biodata dosen. Hubungi Kaprodi untuk menyelesaikan setup akun.',
+            ]);
+        }
+
+        // Ambil daftar MK yang diampu dosen ini dari pivot
+        $mkIds = DB::table('dosen_biodata_mata_kuliah')
+            ->where('dosen_biodata_id', $dosenBiodata->id)
+            ->pluck('mata_kuliah_id');
+
+        // Hitung stats dosen
+        $stats = [
+            'mk_diampu'         => $mkIds->count(),
+            'rps_saya'          => Rps::where('dosen_biodata_id', $dosenBiodata->id)->count(),
+            'cpmk_terkait'      => Cpmk::whereIn('mata_kuliah_id', $mkIds)->count(),
+            'rps_perlu_lengkap' => 0,
+        ];
+
+        // Build items list MK yang diampu
+        $items = MataKuliah::whereIn('id', $mkIds)
+            ->withCount(['cpls', 'cpmks'])
+            ->orderBy('semester')
+            ->orderBy('kode_mk')
+            ->get()
+            ->map(function ($mk) use ($dosenBiodata) {
+                $rps = Rps::where('mata_kuliah_id', $mk->id)
+                    ->where('dosen_biodata_id', $dosenBiodata->id)
+                    ->first();
+
+                return [
+                    'id'          => $mk->id,
+                    'kode_mk'     => $mk->kode_mk,
+                    'nama_mk'     => $mk->nama_mk,
+                    'sks'         => $mk->sks,
+                    'semester'    => $mk->semester ?? '-',
+                    'jenis'       => $mk->jenis,
+                    'cpls_count'  => $mk->cpls_count,
+                    'cpmks_count' => $mk->cpmks_count,
+                    'rps_status'  => $rps ? 'Lengkap' : 'Belum Ada',
+                    'rps_id'      => $rps?->id,
+                ];
+            });
+
+        return Inertia::render('Dashboard', [
+            'dashboardRole' => 'dosen',
+            'stats'         => $stats,
+            'items'         => $items,
+            'shortcuts'     => $shortcuts,
+        ]);
     }
 }
