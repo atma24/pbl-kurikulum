@@ -308,15 +308,10 @@ function DosenDashboard({ stats, items, shortcuts, warning }: {
             )}
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <StatCard label="Mata Kuliah Diampu" value={stats.mk_diampu} color="primary" />
                 <StatCard label="RPS Saya" value={stats.rps_saya} color="teal" />
                 <StatCard label="CPMK Terkait" value={stats.cpmk_terkait} color="secondary" />
-                <StatCard
-                    label="RPS Perlu Dilengkapi"
-                    value={stats.rps_perlu_lengkap}
-                    color={stats.rps_perlu_lengkap > 0 ? 'amber' : 'primary'}
-                />
             </div>
 
             {/* Shortcuts */}

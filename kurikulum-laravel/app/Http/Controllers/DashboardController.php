@@ -156,7 +156,6 @@ class DashboardController extends Controller
                     'mk_diampu'         => 0,
                     'rps_saya'          => 0,
                     'cpmk_terkait'      => 0,
-                    'rps_perlu_lengkap' => 0,
                 ],
                 'items'     => [],
                 'shortcuts' => $shortcuts,
@@ -174,7 +173,6 @@ class DashboardController extends Controller
             'mk_diampu'         => $mkIds->count(),
             'rps_saya'          => Rps::where('dosen_biodata_id', $dosenBiodata->id)->count(),
             'cpmk_terkait'      => Cpmk::whereIn('mata_kuliah_id', $mkIds)->count(),
-            'rps_perlu_lengkap' => 0,
         ];
 
         // Build items list MK yang diampu
