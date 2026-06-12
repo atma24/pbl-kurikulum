@@ -197,6 +197,15 @@ class MataKuliahController extends Controller
         $user = auth()->user();
         $mk = MataKuliah::findOrFail($mkId);
         
+        if ($user->hasRole('Kaprodi')) {
+            \DB::table('dosen_biodata_mata_kuliah')
+                ->where('mata_kuliah_id', $mkId)
+                ->where('dosen_biodata_id', $dosenId)
+                ->delete();
+
+            return redirect()->back()->with('success', 'Dosen pengampu berhasil dihapus.');
+        }
+
         if ($user->hasRole('Dosen')) {
             $dosenBiodata = $user->dosenBiodata;
             
@@ -208,13 +217,14 @@ class MataKuliahController extends Controller
                 return back()->withErrors(['error' => 'Anda hanya dapat menghapus diri sendiri.']);
             }
             
-            $mk->dosenPengampus()->detach($dosenBiodata->id);
+            \DB::table('dosen_biodata_mata_kuliah')
+                ->where('mata_kuliah_id', $mkId)
+                ->where('dosen_biodata_id', $dosenBiodata->id)
+                ->delete();
             
             return redirect()->route('mata-kuliah.index')->with('success', 'Anda berhasil dihapus dari dosen pengampu.');
         }
 
-        $mk->dosenPengampus()->detach($dosenId);
-
-        return redirect()->back()->with('success', 'Dosen pengampu berhasil dihapus.');
+        return back()->withErrors(['error' => 'Akses ditolak.']);
     }
 }

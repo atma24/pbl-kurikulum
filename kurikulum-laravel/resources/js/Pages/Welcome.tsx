@@ -63,7 +63,7 @@ function Icon({ name, className = 'text-xl' }: { name: string; className?: strin
 export default function Welcome(_: Props) {
     return (
         <div className="min-h-screen bg-white font-body text-aqua-900 antialiased">
-            <Head title="TRIN Curriculum Portal" />
+            <Head title="AE Curriculum Portal" />
 
             <nav className="fixed top-0 w-full z-50 bg-white/85 backdrop-blur-xl border-b border-aqua-200/30">
                 <div className="max-w-7xl mx-auto px-6 h-[68px] flex items-center justify-between">
